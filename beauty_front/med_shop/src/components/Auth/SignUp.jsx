@@ -3,6 +3,8 @@ import {Link, Navigate} from 'react-router-dom';
 //import './SignUp.css' 
 import axios from "axios";
 import {useState} from "react";
+import {ADD_USER} from "../AuthRedux/actions";
+import {useDispatch} from "react-redux";
 
 const onFinish = (values) => {
     console.log('Success:', values);
@@ -25,11 +27,13 @@ function SignUp() {
     const [username, setUsername] = useState('');
     const [test, setTest] = useState(0);
     const [isReg, setIsReg] = useState(false);
+    const dispatch = useDispatch()
 
 
     async function SignUp(e) {
         const formData1 = new FormData()
         formData1.append('username', username)
+        formData1.append('email', email)
         formData1.append('password', password)
 
         // Вызов API login
@@ -38,30 +42,31 @@ function SignUp() {
             method: 'POST',
             data: formData1,
         })
-            .then((result) => {
-                setTest(result.data.id);
-                console.log(result.data.id);
-                const aq = result.data.id;
-                setIsReg(true);
-                return aq;
-            }).then(async (aq) => {
-                    await axios(`http://127.0.0.1:8000/user/${aq}/`, {
-                        method: 'GET',
-                    }).then(async (result) => {
-                            result.data.first_name = firstName;
-                            result.data.last_name = lastName;
-                            result.data.access = access;
-                            result.data.email = email;
-                            result.data.tel = tel;
-                            console.log(result.data);
-                            await axios(`http://127.0.0.1:8000/user/${aq}/`, {
-                                method: 'PUT',
-                                data: result.data,
+            .then(async (result) => {
+                await axios(`http://127.0.0.1:8000/auth/jwt/create/`, {
+                    method: 'POST',
+                    data: formData1,
+                })
+                    .then((result) => {
+                        console.log(123, result)
+                        dispatch({
+                            type: ADD_USER,
+                            payload: {token: result.data.access, username: username}
+                        })
+                        return result;
+                    })
+                    .then(async (result) => {
+                        await axios(`http://127.0.0.1:8000/auth/users/me/`, {
+                            method: 'GET',
+                            headers: {
+                                "Authorization": "JWT " + result.data.access,
+                            }
+                        })
+                            .then((result) => {
+                                console.log(result.data);
                             })
-                        }
-                    )
-                }
-            )
+                    })
+            })
     };
     const handleSubmit = (e) => {
         e.preventDefault()
