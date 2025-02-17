@@ -14,7 +14,7 @@ venv/
 staticfiles/
 
 # Node.js
-node_modules/
+med_shop_front/node_modules/
 npm-debug.log
 yarn-error.log
 
