@@ -1,0 +1,31 @@
+.body{ 
+    background-image:  url("background.jpg"); 
+    background-size: cover; 
+    background-repeat: no-repeat; 
+    align-items: baseline; 
+    
+    } 
+    #root{ 
+        margin-top: -8%; 
+    } 
+    .form{ 
+        align-items: center; 
+        margin-left: 35%; 
+        background: rgb(8,0,135); 
+        background: linear-gradient(0deg, rgba(144,238,144,1) 0%, rgb(225, 231, 142) 100%); 
+        border-radius: 10px; 
+    } 
+    .text1{ 
+    margin-left: 35%; 
+    } 
+    .but2{ 
+        background-color: green; 
+     
+    } 
+    .but1{ 
+        background-color: white; 
+        color:green; 
+        border: 1px solid green; 
+        margin-block-end: 5%; 
+     
+    }
