@@ -42,14 +42,15 @@ function LogIn() {
     setUsername(JSON.stringify(username));
   // Вызов API login
   e.preventDefault();
-  await axios(`http://127.0.0.1:8000/auth/token/login/`, {
+  await axios(`http://127.0.0.1:8000/auth/jwt/create/`, {
     method: 'POST',
     data: formData,
   })
       .then((result) => {
+        console.log(123, result)
           dispatch({
             type:ADD_USER,
-            payload: {token: result.data.auth_token, username:username}
+            payload: {token: result.data.access, username:username}
           })
           return result;
       })
@@ -57,7 +58,7 @@ function LogIn() {
   await axios(`http://127.0.0.1:8000/auth/users/me/`, {
     method: 'GET',
     headers:{
-      "Authorization": "Token "+result.data.auth_token,
+      "Authorization": "JWT "+result.data.access,
     }
   })
       .then((result) => {
