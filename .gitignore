@@ -1,0 +1,35 @@
+# Django
+*.log
+*.pot
+*.pyc
+__pycache__/
+db.sqlite3
+media/
+env/
+venv/
+.env
+*.env
+.DS_Store
+
+staticfiles/
+
+# Node.js
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# Сборка
+dist/
+build/
+*.tmp
+*.cache
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Локальные настройки
+*.local
+*.env

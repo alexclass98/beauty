@@ -1,0 +1,8 @@
+{
+  "dependencies": {
+    "react-redux": "^8.0.5",
+    "react-redux-toolkit": "^0.0.1-alpha.2",
+    "react-router": "^6.10.0",
+    "react-router-dom": "^6.10.0"
+  }
+}
