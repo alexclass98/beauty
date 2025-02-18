@@ -4,8 +4,7 @@ import {
     compose,
     legacy_createStore
   } from "redux";
-  
-  import itemReducer from './ChartRedux/itemReducer';
+
   import userReducer from './AuthRedux/userReducer';
   
   const ReactReduxDevTools = window.__REDUX_DEVTOOLS_EXTENSION__ && window.__REDUX_DEVTOOLS_EXTENSION__();
@@ -13,7 +12,6 @@ import {
   function configureStore() {
     return legacy_createStore(
       combineReducers({
-        item: itemReducer,
         user: userReducer,
         
       }),
