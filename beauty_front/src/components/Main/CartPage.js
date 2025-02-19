@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from 'react';
-import { Container, Typography, Box, Button, List, ListItem, ListItemText } from '@mui/material';
+import React, {useEffect, useState} from 'react';
+import {Container, Typography, Box, Button, List, ListItem, ListItemText} from '@mui/material';
 import axios from 'axios';
 import Cookies from 'js-cookie';
-import { Link } from 'react-router-dom';
+import {Link} from 'react-router-dom';
 
 function CartPage() {
     const [cartItems, setCartItems] = useState([]);
@@ -26,9 +26,24 @@ function CartPage() {
 
     const handleCheckout = async () => {
         try {
-            await axios.post(`${process.env.REACT_APP_API_BASE_URL}/orders/`, {
-                items: cartItems.map(item => item.Item_ID),
-                total: cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0)
+            // Получаем данные текущего пользователя
+            const userResponse = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/auth/users/me/`, {
+                headers: {
+                    Authorization: `JWT ${Cookies.get('token')}`
+                }
+            });
+
+            const orderResponse = await axios.post(`${process.env.REACT_APP_API_BASE_URL}/orders/`, {
+                items: cartItems.map(item => item.product),
+                total: cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0),
+                auth_user: userResponse.data.id,
+                address: "Адрес доставки",
+                status: "В обработке",
+                number_of_order: `ORDER-${Date.now()}`,
+                date_of_delivery:  new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+                date_made: new Date().toISOString().split('T')[0],
+                delivery_mode: "Стандартная доставка",
+                chart_id: cartItems.map(item => item.Chart_ID)
             }, {
                 headers: {
                     Authorization: `JWT ${Cookies.get('token')}`
@@ -41,9 +56,13 @@ function CartPage() {
                 }
             });
 
+            // Очищаем состояние корзины
             setCartItems([]);
+
+            alert('Заказ успешно оформлен!');
         } catch (error) {
             console.error('Ошибка оформления заказа:', error);
+            alert('Ошибка при оформлении заказа. Проверьте консоль для подробностей.');
         }
     };
 
@@ -62,7 +81,7 @@ function CartPage() {
                 ))}
             </List>
 
-            <Box sx={{ mt: 3 }}>
+            <Box sx={{mt: 3}}>
                 <Typography variant="h6">
                     Итого: {cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0)} руб.
                 </Typography>
@@ -80,7 +99,7 @@ function CartPage() {
                     component={Link}
                     to="/"
                     variant="outlined"
-                    sx={{ ml: 2 }}
+                    sx={{ml: 2}}
                 >
                     Продолжить покупки
                 </Button>

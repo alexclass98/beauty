@@ -1,24 +1,38 @@
-import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
-import { Container, Typography, Box, Card, CardContent, CardMedia, Button } from '@mui/material';
+import React, {useEffect, useState} from 'react';
+import {useParams} from 'react-router-dom';
+import {Container, Typography, Box, Card, CardContent, CardMedia, Button} from '@mui/material';
 import axios from 'axios';
 import Cookies from 'js-cookie';
 
 function ItemPage() {
-    const { id } = useParams();
+    const {id} = useParams();
     const [item, setItem] = useState(null);
     const [quantity, setQuantity] = useState(1);
 
     const addToCart = async () => {
         try {
+            const userResponse = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/auth/users/me/`, {
+                headers: {
+                    Authorization: `JWT ${Cookies.get('token')}`
+                }
+            });
             await axios.post(`${process.env.REACT_APP_API_BASE_URL}/chart/`, {
+                auth_user: userResponse.data.id,
                 product: id,
+                price: item.price,
                 quantity: quantity
             }, {
                 headers: {
                     Authorization: `JWT ${Cookies.get('token')}`
                 }
             });
+            const updatedItem = { ...item, amount: item.amount - quantity };
+            await axios.put(`${process.env.REACT_APP_API_BASE_URL}/items/${id}/`, updatedItem, {
+                headers: {
+                    Authorization: `JWT ${Cookies.get('token')}`
+                }
+            });
+            setItem(updatedItem);
             alert('Товар добавлен в корзину!');
         } catch (error) {
             console.error('Ошибка добавления в корзину:', error);
@@ -30,6 +44,7 @@ function ItemPage() {
             try {
                 const response = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/items/${id}/`);
                 setItem(response.data);
+
             } catch (error) {
                 console.error('Ошибка загрузки товара:', error);
             }
@@ -44,7 +59,7 @@ function ItemPage() {
 
     return (
         <Container>
-            <Box sx={{ marginTop: 4 }}>
+            <Box sx={{marginTop: 4}}>
                 <Card>
                     <CardMedia
                         component="img"
@@ -66,7 +81,7 @@ function ItemPage() {
                             Количество: {item.amount}
                         </Typography>
                         <Button variant="contained" color="primary"
-                                onClick={addToCart} sx={{ mt: 2 }}>
+                                onClick={addToCart} sx={{mt: 2}}>
                             Добавить в корзину
                         </Button>
                     </CardContent>

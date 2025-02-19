@@ -43,19 +43,16 @@ class AuthUser(models.Model):
     first_name = models.CharField(max_length=150)
     last_name = models.CharField(max_length=150)
     email = models.CharField(max_length=254)
-    address = models.CharField(max_length=254)
     is_staff = models.IntegerField()
     is_active = models.IntegerField()
     date_joined = models.DateTimeField()
-    tel = models.CharField(max_length=45, blank=True, null=True)
-    balance = models.IntegerField(blank=True, null=True)
 
     class Meta:
         managed = False
         db_table = 'auth_user'
 
 class Chart(models.Model):
-    Chart_ID = models.IntegerField(primary_key=True)
+    Chart_ID = models.AutoField(primary_key=True)
     product = models.ForeignKey(Items, models.DO_NOTHING, db_column='product')
     auth_user = models.ForeignKey(AuthUser, models.DO_NOTHING, db_column='auth_user', to_field='id')
     quantity = models.IntegerField()
@@ -67,7 +64,7 @@ class Chart(models.Model):
 
 
 class Order(models.Model):
-    Order_ID = models.IntegerField(primary_key=True)
+    Order_ID = models.AutoField(primary_key=True)
     chart_id = models.ForeignKey(Chart, models.DO_NOTHING, db_column='chart_id')
     auth_user = models.ForeignKey(AuthUser, models.DO_NOTHING, db_column='auth_user', to_field='id')
     address = models.CharField(max_length=255)

@@ -1,10 +1,16 @@
 import React from 'react';
 import { AppBar, Toolbar, Typography, Button, IconButton, Badge } from '@mui/material';
 import { AccountCircle, ShoppingCart } from '@mui/icons-material';
-import { Link } from 'react-router-dom';
+import {Link, useNavigate,} from 'react-router-dom';
 import Cookies from 'js-cookie';
 
-function Header({ onLogout, cartCount }) {
+function Header({ cartCount }) {
+    const navigate = useNavigate();
+
+    const handleLogout = () => {
+        Cookies.remove('token');
+        navigate('/login');
+    };
     return (
         <AppBar position="sticky">
             <Toolbar>
@@ -24,7 +30,7 @@ function Header({ onLogout, cartCount }) {
                     </Badge>
                 </IconButton>
 
-                <Button color="inherit" onClick={onLogout}>
+                <Button color="inherit" onClick={handleLogout}>
                     Выйти
                 </Button>
             </Toolbar>

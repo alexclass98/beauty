@@ -46,6 +46,9 @@ class ChartSerializer(serializers.ModelSerializer):
     class Meta:
         model = Chart
         fields = '__all__'
+        extra_kwargs = {
+            'Chart_ID': {'read_only': True}
+        }
 
 
 class OrderSerializer(serializers.ModelSerializer):
@@ -54,5 +57,8 @@ class OrderSerializer(serializers.ModelSerializer):
         model = Order
         # Поля, которые мы сериализуем
         fields = '__all__'
+        extra_kwargs = {
+            'Order_ID': {'read_only': True}
+        }
 
 
