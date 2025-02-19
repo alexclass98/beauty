@@ -1,13 +1,10 @@
 import React from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { Button, Container, Typography, Box, Card, CardContent, CardMedia } from '@mui/material';
-import Cookies from 'js-cookie';
-import Header from './Header';
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 
 function MainPage() {
-    const navigate = useNavigate();
     const [items, setItems] = useState([]);
 
     useEffect(() => {
@@ -22,11 +19,6 @@ function MainPage() {
 
         fetchItems();
     }, []);
-
-    const handleLogout = () => {
-        Cookies.remove('token');
-        navigate('/login');
-    };
 
     return (
         <Box sx={{ display: 'flex', flexDirection: 'column' }}>

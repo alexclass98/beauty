@@ -9,9 +9,19 @@ import Header from './components/Main/Header';
 import MainPage from "./components/Main/MainPage";
 import ItemPage from "./components/Main/ItemPage";
 import { CookiesProvider } from 'react-cookie';
+import { createTheme, ThemeProvider } from '@mui/material/styles';
+import { deepPurple, amber } from '@mui/material/colors';
+
+const theme = createTheme({
+    palette: {
+        primary: deepPurple,
+        secondary: amber,
+    },
+});
 
 function App() {
     return (
+        <ThemeProvider theme={theme}>
         <CookiesProvider>
             <Router>
                 <Header />
@@ -25,6 +35,7 @@ function App() {
                 </Routes>
             </Router>
         </CookiesProvider>
+        </ThemeProvider>
     );
 }
 

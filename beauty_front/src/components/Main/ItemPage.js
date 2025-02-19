@@ -42,7 +42,11 @@ function ItemPage() {
     useEffect(() => {
         const fetchItem = async () => {
             try {
-                const response = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/items/${id}/`);
+                const response = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/items/${id}/`, {
+                    headers: {
+                        Authorization: `JWT ${Cookies.get('token')}`
+                    }
+                });
                 setItem(response.data);
 
             } catch (error) {
