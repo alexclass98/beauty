@@ -24,6 +24,7 @@ dist/
 build/
 *.tmp
 *.cache
+postgres_data/
 
 # IDE
 .idea/
