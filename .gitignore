@@ -7,8 +7,6 @@ db.sqlite3
 media/
 env/
 venv/
-.env
-*.env
 .DS_Store
 migrations/
 
@@ -24,7 +22,8 @@ dist/
 build/
 *.tmp
 *.cache
-postgres_data/
+postgres_data/*
+!postgres_data/.gitkeep
 
 # IDE
 .idea/
@@ -34,4 +33,3 @@ postgres_data/
 
 # Локальные настройки
 *.local
-*.env
