@@ -139,23 +139,23 @@ function ItemPage() {
                         alt={item.name}
                     />
                     <CardContent>
-                        <Typography variant="h4" component="h1">
+                        <Typography variant="h4" component="h1" sx={{fontFamily: 'Scada, sans-serif', fontWeight: '400'}}>
                             {item.name}
                         </Typography>
-                        <Typography variant="body1" color="text.secondary">
+                        <Typography variant="body1" color="text.secondary" sx={{fontFamily: 'Scada, sans-serif', fontWeight: '400'}}>
                             {item.description}
                         </Typography>
-                        <Typography variant="h5" color="primary">
+                        <Typography variant="h5" color="primary" sx={{fontFamily: 'Scada, sans-serif', fontWeight: '400'}}>
                             ${item.price}
                         </Typography>
-                        <Typography variant="body2">
+                        <Typography variant="body2" sx={{fontFamily: 'Scada, sans-serif', fontWeight: '400'}}>
                             Количество: {item.amount}
                         </Typography>
                         <Button variant="contained" color="primary"
                                 onClick={addToCart} sx={{mt: 2}}>
                             Добавить в корзину
                         </Button>
-                        <Typography variant="body2">
+                        <Typography variant="body2" sx={{fontFamily: 'Scada, sans-serif', fontWeight: '400'}}>
                            {console.log(chartItems.filter(i => i.item.toString()===item.Item_ID).count)}
                            {console.log(chartItems)}
                         </Typography>
