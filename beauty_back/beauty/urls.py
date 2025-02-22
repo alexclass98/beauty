@@ -12,6 +12,7 @@ router.register(r'items', all_views.ItemsViewSet)
 router.register(r'chart', all_views.ChartViewSet)
 router.register(r'chart_items', all_views.ChartItemViewSet)
 router.register(r'orders', all_views.OrderViewSet)
+router.register(r'order_items', all_views.OrderItemsViewSet)
 
 urlpatterns = [
     path('', include(router.urls)),
@@ -21,4 +22,6 @@ urlpatterns = [
     path('add_to_cart/', all_views.add_to_cart, name='add_to_cart'),  # Добавление URL для добавления товара в корзину
     path('remove_from_chart/', all_views.remove_from_chart, name='remove_from_chart'),
     path('chart_summary/', all_views.chart_summary, name='chart_summary'),
+    path('make_order/', all_views.make_order, name='make_order'),
+    path('order_summary/', all_views.order_summary, name='order_summary'),
 ]

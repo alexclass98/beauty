@@ -1,10 +1,13 @@
 from rest_framework import viewsets
+from django.shortcuts import get_object_or_404
 from rest_framework.response import Response
+from rest_framework.request import Request
 from rest_framework.views import APIView
 from rest_framework.decorators import api_view
 from .serializers import *
 from .models import *
 from django_filters.rest_framework import DjangoFilterBackend
+from django.core.exceptions import ObjectDoesNotExist
 from django.conf import settings
 from rest_framework import permissions
 
@@ -103,10 +106,56 @@ def chart_summary(request):
             chart_summary[chart_id] = []
 
         chart_summary[chart_id].append({'item_name': item_name, 'item_count': item_count})
-
     return Response(chart_summary)
 
 class OrderViewSet(viewsets.ModelViewSet):
     queryset = Order.objects.all()
     serializer_class = OrderSerializer
 
+class OrderItemsViewSet(viewsets.ModelViewSet):
+    queryset = OrderItems.objects.all()
+    serializer_class = OrderItemsSerializer
+@api_view(['POST'])
+def make_order(request):
+    order_data = request.data
+
+    try:
+        order = Order.objects.get(number_of_order=order_data['order'])
+        items = order_data['items']
+        user_id = order_data['user']
+
+        for item in items:
+            try:
+                item_object = Items.objects.get(name=item['item_name'])
+                new_order_item = OrderItems(order=order, item=item_object, count=item['item_count'])
+                new_order_item.save()
+            except ObjectDoesNotExist:
+                return Response({'error': f"Item with name '{item['item_name']}' not found"}, status=404)
+
+        response_data = {'message': 'Order items created successfully'}
+        return Response(response_data, status=200)
+
+    except ObjectDoesNotExist:
+        return Response({'error': 'Order not found'}, status=404)
+    except Exception as e:
+        error_message = {'error': str(e)}
+        return Response(error_message, status=400)
+
+
+@api_view(['GET'])
+def order_summary(request):
+    order_items = OrderItems.objects.all()
+
+    order_summary = {}
+
+    for item in order_items:
+        order_id = item.order_id
+        item_name = item.item.name
+        item_count = item.count
+
+        if order_id not in order_summary:
+            order_summary[order_id] = []
+
+        order_summary[order_id].append({'item_name': item_name, 'item_count': item_count})
+
+    return Response(order_summary)

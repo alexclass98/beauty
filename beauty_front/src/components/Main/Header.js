@@ -59,7 +59,7 @@ function Header({ cartCount }) {
                 </IconButton>
 
                 <Button color="inherit" onClick={handleLogout}>
-                    Выйти
+                    Авторизация
                 </Button>
             </Toolbar>
         </AppBar>

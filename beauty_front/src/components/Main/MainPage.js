@@ -1,26 +1,121 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import {useParams} from 'react-router-dom';
 import { Button, Container, Typography, Box, Card, CardContent, CardMedia, Pagination, IconButton, Snackbar } from '@mui/material';
 import axios from 'axios';
 import { AccountCircle, ShoppingCart } from '@mui/icons-material';
+import Cookies from 'js-cookie';
 
 function MainPage() {
     const [items, setItems] = useState([]);
     const [page, setPage] = useState(1);
     const itemsPerPage = 6; // Specify how many items per page
     const [open, setOpen] = React.useState(false);
+    const {id} = useParams();
+    const [item, setItem] = useState(null);
+    const [chartItems, setChartItems] = useState([]);
+    const [quantity, setQuantity] = useState(1);
 
     const handleClick = () => {
-      setOpen(true);
+        setOpen(true);
+      };
+    
+      const handleClose = (event, reason) => {
+        if (reason === 'clickaway') {
+          return;
+        }
+    
+        setOpen(false);
+      };
+
+
+    const addToCart = async (Item_ID) => {
+        try {
+            const userResponse = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/auth/users/me/`, {
+                headers: {
+                    Authorization: `JWT ${Cookies.get('token')}`
+                }
+            });
+            try {
+                const response = await axios.post(`${process.env.REACT_APP_API_BASE_URL}/chart/`, {
+                    user: userResponse.data.id,
+                    // Chart_ID: 1,
+                    // price: item.price,
+                    // count: quantity
+                }, {
+                    headers: {
+                        Authorization: `JWT ${Cookies.get('token')}`
+                    }
+                });
+            
+                // Обработка успешного ответа
+                console.log('Chart created successfully:', response.data);
+            } catch (error) {
+                if (error.response && error.response.data && error.response.data.user) {
+                    // Проверка на наличие ошибки "chart with this user already exists"
+                    console.error('Error:', error.response.data.user[0]);
+                    // Здесь можно добавить логику, чтобы уведомить пользователя о существующем графике
+                } else {
+                    // Обработка других ошибок
+                    console.error('An error occurred:', error.message);
+                }
+            }
+            
+            await axios.post(`${process.env.REACT_APP_API_BASE_URL}/add_to_cart/`, {
+                user: userResponse.data.id,
+                item: Item_ID,
+                // price: item.price,
+                // count: quantity
+            }, {
+                headers: {
+                    Authorization: `JWT ${Cookies.get('token')}`
+                }
+            });
+            const updatedItem = { ...item, amount: item.amount - quantity };
+            await axios.put(`${process.env.REACT_APP_API_BASE_URL}/items/${id}/`, updatedItem, {
+                headers: {
+                    Authorization: `JWT ${Cookies.get('token')}`
+                }
+            });
+            setItem(updatedItem);
+            handleClick()
+        } catch (error) {
+            console.error('Ошибка добавления в корзину:', error);
+        }
     };
-  
-    const handleClose = (event, reason) => {
-      if (reason === 'clickaway') {
-        return;
-      }
-  
-      setOpen(false);
+
+
+   const removeFromCart = async Item_ID => {
+        try {
+            const userResponse = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/auth/users/me/`, {
+                headers: {
+                    Authorization: `JWT ${Cookies.get('token')}`
+                }
+            });
+            await axios.post(`${process.env.REACT_APP_API_BASE_URL}/remove_from_chart/`, {
+                user: userResponse.data.id,
+                item: Item_ID,
+                // price: item.price,
+                // count: quantity
+            }, {
+                headers: {
+                    Authorization: `JWT ${Cookies.get('token')}`
+                }
+            });
+            const updatedItem = { ...item, amount: item.amount + quantity };
+            await axios.put(`${process.env.REACT_APP_API_BASE_URL}/items/${id}/`, updatedItem, {
+                headers: {
+                    Authorization: `JWT ${Cookies.get('token')}`
+                }
+            });
+            setItem(updatedItem);
+            alert('Товар удалён из корзины!');
+        } catch (error) {
+            console.error('Ошибка удаления:', error);
+        }
     };
+
+
     useEffect(() => {
         const fetchItems = async () => {
             try {
@@ -110,19 +205,13 @@ function MainPage() {
                                 marginBottom: 2, 
                                 
                             }}>
-                                <Button variant="contained" color="primary" onClick={handleClick}>
+                                <Button variant="contained" color="primary" value= {item.Item_ID} onClick={(e) => removeFromCart(e.currentTarget.value)}>
                                     -
                                 </Button>
-                                <Snackbar
-                                    open={open}
-                                    autoHideDuration={5000}
-                                    onClose={handleClose}
-                                    message="Товар удалён корзину"
-                                />
                                 <Typography gutterBottom sx={{ fontFamily: 'Scada, sans-serif', fontWeight: '400', mx: 2 , color: '#A8A8A8',}}>
                                    кол-во
                                 </Typography>
-                                <Button variant="contained" color="primary" onClick={handleClick}>
+                                <Button variant="contained" color="primary" value= {item.Item_ID} onClick={(e) => addToCart(e.currentTarget.value)}>
                                     +
                                 </Button>
                                 <Snackbar
@@ -132,7 +221,7 @@ function MainPage() {
                                     message="Товар добавлен в корзину"
                                 />
                                 <IconButton color="inherit" sx={{ ml: 2, }}>
-                                    <ShoppingCart sx={{ color: '#A8A8A8' }} /> {/* Фиолетовый цвет */}
+                                    <ShoppingCart sx={{ color: '#A8A8A8' }} /> 
                                 </IconButton>
 
                             </Box>

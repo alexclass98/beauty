@@ -55,6 +55,7 @@ class Chart(models.Model):
     Chart_ID = models.AutoField(primary_key=True)
     # product = models.ForeignKey(Items, models.DO_NOTHING, db_column='product')
     user = models.OneToOneField(AuthUser, on_delete=models.CASCADE)
+    # checked_out = models.IntegerField(default=0)
     # quantity = models.IntegerField()
     # price = models.IntegerField()
 
@@ -73,11 +74,10 @@ class ChartItem(models.Model):
 
 class Order(models.Model):
     Order_ID = models.AutoField(primary_key=True)
-    chart_id = models.ForeignKey(Chart, models.DO_NOTHING, db_column='chart_id')
-    auth_user = models.ForeignKey(AuthUser, models.DO_NOTHING, db_column='auth_user', to_field='id')
+    user = models.ForeignKey(AuthUser, models.DO_NOTHING, db_column='auth_user', to_field='id')
     address = models.CharField(max_length=255)
     status = models.CharField(max_length=255)
-    number_of_order = models.CharField(max_length=45)
+    number_of_order = models.IntegerField(max_length=45)
     date_of_delivery = models.DateField()
     date_made = models.DateField()
     delivery_mode = models.CharField(max_length=45)
@@ -85,3 +85,14 @@ class Order(models.Model):
     class Meta:
         managed = True
         db_table = 'order'
+
+class OrderItems(models.Model):
+    OrderItem_ID = models.AutoField(primary_key=True)
+    order = models.ForeignKey(Order, on_delete=models.CASCADE)
+    item = models.ForeignKey(Items, on_delete=models.CASCADE, related_name='order_items')
+    count = models.PositiveIntegerField(default=1)
+
+    class Meta:
+        managed = True
+        db_table = 'order_items'
+

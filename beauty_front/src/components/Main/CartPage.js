@@ -75,7 +75,7 @@ function CartPage() {
             });
 
             const orderResponse = await axios.post(`${process.env.REACT_APP_API_BASE_URL}/orders/`, {
-                auth_user: userResponse.data.id,
+                user: userResponse.data.id,
                 address: "Адрес доставки",
                 status: "В обработке",
                 number_of_order: `ORDER-${Date.now()}`,
@@ -103,7 +103,57 @@ function CartPage() {
             alert('Ошибка при оформлении заказа. Проверьте консоль для подробностей.');
         }
     };
+const placeOrder = async () => {
+    try {
+        const userResponse = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/auth/users/me/`, {
+            headers: {
+                Authorization: `JWT ${Cookies.get('token')}`
+            }
+        });
+        const number_of_order_my = parseInt(Date.now() / 1000000).toFixed();
 
+        // Создание заказа
+        const orderResponse = await axios.post(`${process.env.REACT_APP_API_BASE_URL}/orders/`, {
+            user: userResponse.data.id,
+            address: "Адрес доставки",
+            status: "В обработке",
+            number_of_order: number_of_order_my,
+            date_of_delivery: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+            date_made: new Date().toISOString().split('T')[0],
+            delivery_mode: "Стандартная доставка",
+            chart_id: 1
+        }, {
+            headers: {
+                Authorization: `JWT ${Cookies.get('token')}`
+            }
+        });
+
+        // Добавление элементов заказа
+        await axios.post(`${process.env.REACT_APP_API_BASE_URL}/make_order/`, {
+            order: number_of_order_my,
+            items: cartItems,
+            user: userResponse.data.id
+        }, {
+            headers: {
+                Authorization: `JWT ${Cookies.get('token')}`
+            }
+        });
+
+        console.log('Order placed successfully!');
+
+    } catch (error) {
+        console.error('Error placing the order:', error);
+    }
+    await axios.delete(`${process.env.REACT_APP_API_BASE_URL}/chart/${1}/`, {
+        headers: {
+            Authorization: `JWT ${Cookies.get('token')}`
+        }
+    });
+
+    setCartItems([]);
+};
+
+    
     return (
         <Container>
             <Typography variant="h4" gutterBottom>Корзина</Typography>
@@ -173,7 +223,7 @@ function CartPage() {
                 <Button
                     variant="contained"
                     color="primary"
-                    onClick={handleCheckout}
+                    onClick={placeOrder}
                     disabled={cartItems.length === 0}
                 >
                     Оформить заказ

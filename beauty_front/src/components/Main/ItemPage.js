@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from 'react';
 import {useParams} from 'react-router-dom';
-import {Container, Typography, Box, Card, CardContent, CardMedia, Button} from '@mui/material';
+import {Container, Typography, Box, Card, CardContent, CardMedia, Button, Snackbar} from '@mui/material';
 import axios from 'axios';
 import Cookies from 'js-cookie';
 
@@ -8,8 +8,20 @@ function ItemPage() {
     const {id} = useParams();
     const [item, setItem] = useState(null);
     const [chartItems, setChartItems] = useState([]);
+    const [open, setOpen] = React.useState(false);
     const [quantity, setQuantity] = useState(1);
-
+    
+    const handleClick = () => {
+        setOpen(true);
+      };
+    
+      const handleClose = (event, reason) => {
+        if (reason === 'clickaway') {
+          return;
+        }
+    
+        setOpen(false);
+      };
 
 
     const addToCart = async () => {
@@ -22,7 +34,7 @@ function ItemPage() {
             try {
                 const response = await axios.post(`${process.env.REACT_APP_API_BASE_URL}/chart/`, {
                     user: userResponse.data.id,
-                    Chart_ID: 1,
+                    // Chart_ID: 1,
                     // price: item.price,
                     // count: quantity
                 }, {
@@ -61,11 +73,13 @@ function ItemPage() {
                 }
             });
             setItem(updatedItem);
-            alert('Товар добавлен в корзину!');
+            handleClick()
         } catch (error) {
             console.error('Ошибка добавления в корзину:', error);
         }
     };
+
+
    const removeFromCart = async () => {
         try {
             const userResponse = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/auth/users/me/`, {
@@ -90,7 +104,7 @@ function ItemPage() {
                 }
             });
             setItem(updatedItem);
-            alert('Товар удалён из корзины!');
+            handleClick()
         } catch (error) {
             console.error('Ошибка удаления:', error);
         }
@@ -155,11 +169,16 @@ function ItemPage() {
                                 onClick={addToCart} sx={{mt: 2}}>
                             Добавить в корзину
                         </Button>
+                        <Snackbar
+                                open={open}
+                                autoHideDuration={5000}
+                                onClose={handleClose}
+                                message="Товар добавлен в корзину" />
                         <Typography variant="body2" sx={{fontFamily: 'Scada, sans-serif', fontWeight: '400'}}>
                            {console.log(chartItems.filter(i => i.item.toString()===item.Item_ID).count)}
                            {console.log(chartItems)}
                         </Typography>
-                        
+                        {}
                         <Button variant="contained" color="primary"
                                 onClick={removeFromCart} sx={{mt: 2}}>
                             -
