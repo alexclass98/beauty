@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { Container, Typography, Box, Button, List, ListItem, ListItemText,  Card, CardContent, CardMedia, Snackbar} from '@mui/material';
-
+import {useParams} from 'react-router-dom';
 import axios from 'axios';
 import Cookies from 'js-cookie';
 import { Link } from 'react-router-dom';
 
 function CartPage() {
+    const {id} = useParams();
     const [cartItems, setCartItems] = useState([]);
     const [user, setUser] = useState(null);
     const [items, setItems] = useState([]);
@@ -74,11 +75,6 @@ function CartPage() {
             });
 
             const orderResponse = await axios.post(`${process.env.REACT_APP_API_BASE_URL}/orders/`, {
-                items: cartItems.map(item => item.item_name), // Используем item_name
-                total: cartItems.reduce((sum, item) => {
-                    const itemInfo = getItemInfo(item.item_name);
-                    return sum + (itemInfo ? itemInfo.price * item.item_count : 0);
-                }, 0),
                 auth_user: userResponse.data.id,
                 address: "Адрес доставки",
                 status: "В обработке",
@@ -86,7 +82,7 @@ function CartPage() {
                 date_of_delivery: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
                 date_made: new Date().toISOString().split('T')[0],
                 delivery_mode: "Стандартная доставка",
-                chart_id: cartItems.map(item => item.Chart_ID) // Если есть Chart_ID
+                chart_id: cartItems.Chart_ID // Если есть Chart_ID
             }, {
                 headers: {
                     Authorization: `JWT ${Cookies.get('token')}`
