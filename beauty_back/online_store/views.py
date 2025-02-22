@@ -8,6 +8,11 @@ from django_filters.rest_framework import DjangoFilterBackend
 from django.conf import settings
 from rest_framework import permissions
 
+class AuthUserViewSet(viewsets.ModelViewSet):
+    # Описание класса заказов, добавляем тут сериалайзер
+    # queryset всех пользователей для фильтрации по дате последнего изменения
+    queryset = AuthUser.objects.all()
+    serializer_class = AuthUserSerializer
 
 class BigCategoriesViewSet(viewsets.ModelViewSet):
     # Описание класса лекарств, добавляем тут сериалайзер и поля для фильтрации
@@ -23,16 +28,13 @@ class SmallCategoriesViewSet(viewsets.ModelViewSet):
     serializer_class = SmallCategoriesSerializer
 
 
-class AuthUserViewSet(viewsets.ModelViewSet):
-    # Описание класса заказов, добавляем тут сериалайзер
-    # queryset всех пользователей для фильтрации по дате последнего изменения
-    queryset = AuthUser.objects.all()
-    serializer_class = AuthUserSerializer
-
-
 class ItemsViewSet(viewsets.ModelViewSet):
+    # Описание класса лекарств, добавляем тут сериалайзер и поля для фильтрации
     queryset = Items.objects.all()
     serializer_class = ItemsSerializer
+    filter_backends = (DjangoFilterBackend,)
+    filterset_class = ItemsFilter
+    search_fields = ['^name', '^category']
 
 
 class ChartViewSet(viewsets.ModelViewSet):

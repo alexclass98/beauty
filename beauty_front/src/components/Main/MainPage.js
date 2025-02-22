@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Button, Container, Typography, Box, Card, CardContent, CardMedia, Pagination, IconButton } from '@mui/material';
+import { Button, Container, Typography, Box, Card, CardContent, CardMedia, Pagination, IconButton, Snackbar } from '@mui/material';
 import axios from 'axios';
 import { AccountCircle, ShoppingCart } from '@mui/icons-material';
 
@@ -8,7 +8,19 @@ function MainPage() {
     const [items, setItems] = useState([]);
     const [page, setPage] = useState(1);
     const itemsPerPage = 6; // Specify how many items per page
+    const [open, setOpen] = React.useState(false);
 
+    const handleClick = () => {
+      setOpen(true);
+    };
+  
+    const handleClose = (event, reason) => {
+      if (reason === 'clickaway') {
+        return;
+      }
+  
+      setOpen(false);
+    };
     useEffect(() => {
         const fetchItems = async () => {
             try {
@@ -31,6 +43,8 @@ function MainPage() {
     const handlePageChange = (event, value) => {
         setPage(value);
     };
+
+    
 
     return (
         <Box sx={{ display: 'flex', flexDirection: 'column' }}>
@@ -96,15 +110,27 @@ function MainPage() {
                                 marginBottom: 2, 
                                 
                             }}>
-                                <Button variant="contained" color="primary" >
+                                <Button variant="contained" color="primary" onClick={handleClick}>
                                     -
                                 </Button>
+                                <Snackbar
+                                    open={open}
+                                    autoHideDuration={5000}
+                                    onClose={handleClose}
+                                    message="Товар удалён корзину"
+                                />
                                 <Typography gutterBottom sx={{ fontFamily: 'Scada, sans-serif', fontWeight: '400', mx: 2 , color: '#A8A8A8',}}>
                                    кол-во
                                 </Typography>
-                                <Button variant="contained" color="primary" >
+                                <Button variant="contained" color="primary" onClick={handleClick}>
                                     +
                                 </Button>
+                                <Snackbar
+                                    open={open}
+                                    autoHideDuration={5000}
+                                    onClose={handleClose}
+                                    message="Товар добавлен в корзину"
+                                />
                                 <IconButton color="inherit" sx={{ ml: 2, }}>
                                     <ShoppingCart sx={{ color: '#A8A8A8' }} /> {/* Фиолетовый цвет */}
                                 </IconButton>

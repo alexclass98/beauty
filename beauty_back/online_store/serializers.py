@@ -48,6 +48,17 @@ class ChartSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+class ItemsFilter(filters.FilterSet):
+    pass
+    max_pr = filters.NumberFilter(field_name='price', lookup_expr='lte')
+    min_pr = filters.NumberFilter(field_name='price', lookup_expr='gte')
+    search = filters.CharFilter(field_name='name', lookup_expr='icontains')
+
+    class Meta:
+        model = Items
+        fields = ['price', 'name', 'category']
+
+
 class ChartItemSerializer(serializers.ModelSerializer):
     item = serializers.PrimaryKeyRelatedField(queryset=Items.objects.all())
     class Meta:
