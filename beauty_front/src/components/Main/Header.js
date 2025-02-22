@@ -14,12 +14,15 @@ function Header({ cartCount }) {
     return (
         <AppBar position="sticky">
             <Toolbar>
-                <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+                <Typography
+                    variant="h5"
+                    component="div"
+                    sx={{ flexGrow: 1, fontFamily: 'Pattaya, sans-serif', fontWeight: '500' }} // Измените здесь
+                >
                     <Link to="/" style={{ color: 'white', textDecoration: 'none' }}>
-                        Интернет-магазин
+                        Beauty 4U
                     </Link>
-                </Typography>
-
+                    </Typography>
                 <IconButton color="inherit" component={Link} to="/profile">
                     <AccountCircle />
                 </IconButton>

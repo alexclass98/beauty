@@ -33,17 +33,17 @@ function ProfilePage() {
 
     return (
         <Container>
-            <Typography variant="h4" gutterBottom>Профиль пользователя</Typography>
+            <Typography variant="h4" gutterBottom sx={{fontFamily: 'Scada, sans-serif', fontWeight: '500'}}>Профиль пользователя</Typography>
 
             {userData && (
                 <Box sx={{ mb: 4 }}>
-                    <Typography variant="h6">Имя: {userData.first_name} {userData.last_name}</Typography>
-                    <Typography variant="h6">Email: {userData.email}</Typography>
-                    <Typography variant="h6">Телефон: {userData.tel}</Typography>
+                    <Typography variant="h6" sx={{fontFamily: 'Scada, sans-serif', fontWeight: '400'}}>Ник: {userData.username} </Typography>
+                    <Typography variant="h6" sx={{fontFamily: 'Scada, sans-serif', fontWeight: '400'}}>Email: {userData.email}</Typography>
+                    
                 </Box>
             )}
 
-            <Typography variant="h5" gutterBottom>История заказов:</Typography>
+            <Typography variant="h5" gutterBottom sx={{fontFamily: 'Scada, sans-serif', fontWeight: '500'}}>История заказов:</Typography>
             <List>
                 {orders.map(order => (
                     <ListItem key={order.Order_ID}>

@@ -19,6 +19,31 @@ function ItemPage() {
                     Authorization: `JWT ${Cookies.get('token')}`
                 }
             });
+            try {
+                const response = await axios.post(`${process.env.REACT_APP_API_BASE_URL}/chart/`, {
+                    user: userResponse.data.id,
+                    Chart_ID: 1,
+                    // price: item.price,
+                    // count: quantity
+                }, {
+                    headers: {
+                        Authorization: `JWT ${Cookies.get('token')}`
+                    }
+                });
+            
+                // Обработка успешного ответа
+                console.log('Chart created successfully:', response.data);
+            } catch (error) {
+                if (error.response && error.response.data && error.response.data.user) {
+                    // Проверка на наличие ошибки "chart with this user already exists"
+                    console.error('Error:', error.response.data.user[0]);
+                    // Здесь можно добавить логику, чтобы уведомить пользователя о существующем графике
+                } else {
+                    // Обработка других ошибок
+                    console.error('An error occurred:', error.message);
+                }
+            }
+            
             await axios.post(`${process.env.REACT_APP_API_BASE_URL}/add_to_cart/`, {
                 user: userResponse.data.id,
                 item: id,
