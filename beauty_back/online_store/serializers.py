@@ -46,9 +46,19 @@ class ChartSerializer(serializers.ModelSerializer):
     class Meta:
         model = Chart
         fields = '__all__'
-        extra_kwargs = {
-            'Chart_ID': {'read_only': True}
-        }
+
+
+class ChartItemSerializer(serializers.ModelSerializer):
+    item = serializers.PrimaryKeyRelatedField(queryset=Items.objects.all())
+    class Meta:
+        model = ChartItem
+        fields = '__all__'
+
+    # def to_representation(self, instance):
+    #     data = ItemsSerializer(instance.item).data
+    #     data['count'] = instance.quantity
+    #     print(data)
+    #     return data
 
 
 class OrderSerializer(serializers.ModelSerializer):
