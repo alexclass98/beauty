@@ -4,6 +4,8 @@ import { Button, Container, Typography, Box, Card, CardContent, CardMedia } from
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 
+
+
 function MainPage() {
     const [items, setItems] = useState([]);
 
@@ -64,7 +66,7 @@ function MainPage() {
                             <Box sx={{ p: 2 }}>
                                 <Button
                                     component={Link}
-                                    to={`/item/${item.Item_ID}`}
+                                    to={`/items/${item.Item_ID}`}
                                     variant="contained"
                                     color="primary"
                                     fullWidth

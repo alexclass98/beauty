@@ -3,19 +3,22 @@ import {Container, Typography, Box, Button, List, ListItem, ListItemText} from '
 import axios from 'axios';
 import Cookies from 'js-cookie';
 import {Link} from 'react-router-dom';
+import {useParams} from 'react-router-dom';
 
 function CartPage() {
     const [cartItems, setCartItems] = useState([]);
+    const {id} = useParams();
 
     useEffect(() => {
         const fetchCart = async () => {
             try {
-                const response = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/chart/`, {
+                const response = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/chart_summary/`, {
                     headers: {
                         Authorization: `JWT ${Cookies.get('token')}`
                     }
                 });
                 setCartItems(response.data);
+                console.log(cartItems)
             } catch (error) {
                 console.error('Ошибка загрузки корзины:', error);
             }
@@ -23,6 +26,9 @@ function CartPage() {
 
         fetchCart();
     }, []);
+
+    //отбор по пользователью
+
 
     const handleCheckout = async () => {
         try {
@@ -69,22 +75,19 @@ function CartPage() {
     return (
         <Container>
             <Typography variant="h4" gutterBottom>Корзина</Typography>
-
-            <List>
-                {cartItems.map(item => (
-                    <ListItem key={item.Chart_ID}>
-                        <ListItemText
-                            primary={item.product.name}
-                            secondary={`Количество: ${item.quantity} | Цена: ${item.price}`}
-                        />
-                    </ListItem>
-                ))}
-            </List>
+            {/* {cartItems['1'].map((item, index) => (
+                <ListItem key={index}>
+                    <ListItemText
+                        primary={item.item_name}
+                        secondary={`Количество: ${item.item_count}`}
+                    />
+                </ListItem>
+            ))} */}
 
             <Box sx={{mt: 3}}>
-                <Typography variant="h6">
+                {/* <Typography variant="h6">
                     Итого: {cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0)} руб.
-                </Typography>
+                </Typography> */}
 
                 <Button
                     variant="contained"

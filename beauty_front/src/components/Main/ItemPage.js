@@ -7,7 +7,10 @@ import Cookies from 'js-cookie';
 function ItemPage() {
     const {id} = useParams();
     const [item, setItem] = useState(null);
+    const [chartItems, setChartItems] = useState([]);
     const [quantity, setQuantity] = useState(1);
+
+
 
     const addToCart = async () => {
         try {
@@ -16,11 +19,11 @@ function ItemPage() {
                     Authorization: `JWT ${Cookies.get('token')}`
                 }
             });
-            await axios.post(`${process.env.REACT_APP_API_BASE_URL}/chart/`, {
-                auth_user: userResponse.data.id,
-                product: id,
-                price: item.price,
-                quantity: quantity
+            await axios.post(`${process.env.REACT_APP_API_BASE_URL}/add_to_cart/`, {
+                user: userResponse.data.id,
+                item: id,
+                // price: item.price,
+                // count: quantity
             }, {
                 headers: {
                     Authorization: `JWT ${Cookies.get('token')}`
@@ -38,30 +41,69 @@ function ItemPage() {
             console.error('Ошибка добавления в корзину:', error);
         }
     };
+   const removeFromCart = async () => {
+        try {
+            const userResponse = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/auth/users/me/`, {
+                headers: {
+                    Authorization: `JWT ${Cookies.get('token')}`
+                }
+            });
+            await axios.post(`${process.env.REACT_APP_API_BASE_URL}/remove_from_chart/`, {
+                user: userResponse.data.id,
+                item: id,
+                // price: item.price,
+                // count: quantity
+            }, {
+                headers: {
+                    Authorization: `JWT ${Cookies.get('token')}`
+                }
+            });
+            const updatedItem = { ...item, amount: item.amount + quantity };
+            await axios.put(`${process.env.REACT_APP_API_BASE_URL}/items/${id}/`, updatedItem, {
+                headers: {
+                    Authorization: `JWT ${Cookies.get('token')}`
+                }
+            });
+            setItem(updatedItem);
+            alert('Товар удалён из корзины!');
+        } catch (error) {
+            console.error('Ошибка удаления:', error);
+        }
+    };
 
     useEffect(() => {
         const fetchItem = async () => {
             try {
-                const response = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/items/${id}/`, {
-                    headers: {
-                        Authorization: `JWT ${Cookies.get('token')}`
-                    }
-                });
+                const response = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/items/${id}/`);
                 setItem(response.data);
-
             } catch (error) {
-                console.error('Ошибка загрузки товара:', error);
+                console.error('Ошибка загрузки товаров:', error);
             }
         };
 
         fetchItem();
-    }, [id]);
+    }, []);
+
+    useEffect(() => {
+        const fetchItems = async () => {
+            try {
+                const response = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/chart_items/`);
+                setChartItems((response.data).filter((it=> it.item.toString()=== item.Item_ID)));
+            } catch (error) {
+                console.error('Ошибка загрузки товаров:', error);
+            }
+        };
+
+        fetchItems();
+    }, []);
+
+
 
     if (!item) {
         return <Typography>Загрузка...</Typography>;
     }
 
-    return (
+    else return (
         <Container>
             <Box sx={{marginTop: 4}}>
                 <Card>
@@ -87,6 +129,15 @@ function ItemPage() {
                         <Button variant="contained" color="primary"
                                 onClick={addToCart} sx={{mt: 2}}>
                             Добавить в корзину
+                        </Button>
+                        <Typography variant="body2">
+                           {console.log(chartItems.filter(i => i.item.toString()===item.Item_ID).count)}
+                           {console.log(chartItems)}
+                        </Typography>
+                        
+                        <Button variant="contained" color="primary"
+                                onClick={removeFromCart} sx={{mt: 2}}>
+                            -
                         </Button>
                     </CardContent>
                 </Card>
