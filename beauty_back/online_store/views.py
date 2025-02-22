@@ -8,12 +8,6 @@ from django_filters.rest_framework import DjangoFilterBackend
 from django.conf import settings
 from rest_framework import permissions
 
-class AuthUserViewSet(viewsets.ModelViewSet):
-    # Описание класса заказов, добавляем тут сериалайзер
-    # queryset всех пользователей для фильтрации по дате последнего изменения
-    queryset = AuthUser.objects.all()
-    serializer_class = AuthUserSerializer
-
 
 class BigCategoriesViewSet(viewsets.ModelViewSet):
     # Описание класса лекарств, добавляем тут сериалайзер и поля для фильтрации
@@ -29,17 +23,17 @@ class SmallCategoriesViewSet(viewsets.ModelViewSet):
     serializer_class = SmallCategoriesSerializer
 
 
+class AuthUserViewSet(viewsets.ModelViewSet):
+    # Описание класса заказов, добавляем тут сериалайзер
+    # queryset всех пользователей для фильтрации по дате последнего изменения
+    queryset = AuthUser.objects.all()
+    serializer_class = AuthUserSerializer
+
+
 class ItemsViewSet(viewsets.ModelViewSet):
     queryset = Items.objects.all()
     serializer_class = ItemsSerializer
-    filter_backends = (DjangoFilterBackend, filters.SearchFilter)
-    filterset_fields = {
-        'name': ['exact', 'icontains'],
-        'price': ['exact', 'lt', 'gt'],
-        'amount': ['exact', 'lt', 'gt'],
-        'color': ['exact', 'icontains'],
-    }
-    search_fields = ['name', 'description', 'color']
+
 
 class ChartViewSet(viewsets.ModelViewSet):
     queryset = Chart.objects.all()
