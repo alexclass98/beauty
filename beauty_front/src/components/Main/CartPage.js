@@ -1,38 +1,58 @@
-import React, {useEffect, useState} from 'react';
-import {Container, Typography, Box, Button, List, ListItem, ListItemText} from '@mui/material';
+import React, { useEffect, useState } from 'react';
+import { Container, Typography, Box, Button, List, ListItem, ListItemText } from '@mui/material';
 import axios from 'axios';
 import Cookies from 'js-cookie';
-import {Link} from 'react-router-dom';
-import {useParams} from 'react-router-dom';
+import { Link } from 'react-router-dom';
 
 function CartPage() {
     const [cartItems, setCartItems] = useState([]);
-    const {id} = useParams();
+    const [user, setUser] = useState(null);
+    const [items, setItems] = useState([]);
 
     useEffect(() => {
-        const fetchCart = async () => {
+        const fetchData = async () => {
             try {
-                const response = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/chart_summary/`, {
+                const userResponse = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/auth/users/me/`, {
                     headers: {
                         Authorization: `JWT ${Cookies.get('token')}`
                     }
                 });
-                setCartItems(response.data);
-                console.log(cartItems)
+                setUser(userResponse.data);
+
+                const cartResponse = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/chart_summary/`, {
+                    headers: {
+                        Authorization: `JWT ${Cookies.get('token')}`
+                    }
+                });
+
+                console.log('Cart Response:', cartResponse.data);
+
+                const userCart = cartResponse.data[userResponse.data.id] || [];
+                console.log('User Cart:', userCart);
+
+                setCartItems(userCart);
+
+                const itemsResponse = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/items/`, {
+                    headers: {
+                        Authorization: `JWT ${Cookies.get('token')}`
+                    }
+                });
+                setItems(itemsResponse.data);
+
             } catch (error) {
-                console.error('Ошибка загрузки корзины:', error);
+                console.error('Ошибка загрузки данных:', error);
             }
         };
 
-        fetchCart();
+        fetchData();
     }, []);
 
-    //отбор по пользователью
-
+    const getItemInfo = (itemName) => {
+        return items.find(item => item.name === itemName);
+    };
 
     const handleCheckout = async () => {
         try {
-            // Получаем данные текущего пользователя
             const userResponse = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/auth/users/me/`, {
                 headers: {
                     Authorization: `JWT ${Cookies.get('token')}`
@@ -40,16 +60,19 @@ function CartPage() {
             });
 
             const orderResponse = await axios.post(`${process.env.REACT_APP_API_BASE_URL}/orders/`, {
-                items: cartItems.map(item => item.product),
-                total: cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0),
+                items: cartItems.map(item => item.item_name), // Используем item_name
+                total: cartItems.reduce((sum, item) => {
+                    const itemInfo = getItemInfo(item.item_name);
+                    return sum + (itemInfo ? itemInfo.price * item.item_count : 0);
+                }, 0),
                 auth_user: userResponse.data.id,
                 address: "Адрес доставки",
                 status: "В обработке",
                 number_of_order: `ORDER-${Date.now()}`,
-                date_of_delivery:  new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+                date_of_delivery: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
                 date_made: new Date().toISOString().split('T')[0],
                 delivery_mode: "Стандартная доставка",
-                chart_id: cartItems.map(item => item.Chart_ID)
+                chart_id: cartItems.map(item => item.Chart_ID) // Если есть Chart_ID
             }, {
                 headers: {
                     Authorization: `JWT ${Cookies.get('token')}`
@@ -62,7 +85,6 @@ function CartPage() {
                 }
             });
 
-            // Очищаем состояние корзины
             setCartItems([]);
 
             alert('Заказ успешно оформлен!');
@@ -75,19 +97,27 @@ function CartPage() {
     return (
         <Container>
             <Typography variant="h4" gutterBottom>Корзина</Typography>
-            {/* {cartItems['1'].map((item, index) => (
-                <ListItem key={index}>
-                    <ListItemText
-                        primary={item.item_name}
-                        secondary={`Количество: ${item.item_count}`}
-                    />
-                </ListItem>
-            ))} */}
+            <List>
+                {cartItems.map((cartItem, index) => {
+                    const itemInfo = getItemInfo(cartItem.item_name); // Ищем товар по item_name
+                    return (
+                        <ListItem key={index}>
+                            <ListItemText
+                                primary={itemInfo ? itemInfo.name : 'Товар не найден'}
+                                secondary={`Количество: ${cartItem.item_count}, Цена: ${itemInfo ? itemInfo.price : 'N/A'} руб.`}
+                            />
+                        </ListItem>
+                    );
+                })}
+            </List>
 
-            <Box sx={{mt: 3}}>
-                {/* <Typography variant="h6">
-                    Итого: {cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0)} руб.
-                </Typography> */}
+            <Box sx={{ mt: 3 }}>
+                <Typography variant="h6">
+                    Итого: {cartItems.reduce((sum, item) => {
+                    const itemInfo = getItemInfo(item.item_name);
+                    return sum + (itemInfo ? itemInfo.price * item.item_count : 0);
+                }, 0)} руб.
+                </Typography>
 
                 <Button
                     variant="contained"
@@ -102,7 +132,7 @@ function CartPage() {
                     component={Link}
                     to="/"
                     variant="outlined"
-                    sx={{ml: 2}}
+                    sx={{ ml: 2 }}
                 >
                     Продолжить покупки
                 </Button>

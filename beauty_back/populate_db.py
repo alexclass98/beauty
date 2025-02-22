@@ -1,11 +1,12 @@
 import os
 import django
+import random
+from datetime import datetime, timedelta
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'beauty.settings')
 django.setup()
 
 from online_store.models import BigCategories, SmallCategories, Items
-import random
 
 def create_test_data():
     # Создаем большие категории
@@ -15,21 +16,24 @@ def create_test_data():
 
     # Создаем маленькие категории
     small_cats = [
-        {'name': 'Тональные средства', 'parent': BigCategories.objects.get(name='Косметика')},
-        {'name': 'Туалетная вода', 'parent': BigCategories.objects.get(name='Парфюмерия')},
-        {'name': 'Кремы', 'parent': BigCategories.objects.get(name='Уход за кожей')},
+        {'name': 'Тональные средства', 'parent': BigCategories.objects.filter(name='Косметика').first()},
+        {'name': 'Туалетная вода', 'parent': BigCategories.objects.filter(name='Парфюмерия').first()},
+        {'name': 'Кремы', 'parent': BigCategories.objects.filter(name='Уход за кожей').first()},
     ]
     for cat in small_cats:
         SmallCategories.objects.create(SmallCategory_ID=random.randint(1000, 9999), **cat)
 
     # Создаем товары
     items = [
-        {'name': 'Тональный крем', 'description': 'Легкий тон', 'price': 1500, 'category': SmallCategories.objects.get(name='Тональные средства')},
-        {'name': 'Туалетная вода Chanel', 'description': 'Аромат цветов', 'price': 5000, 'category': SmallCategories.objects.get(name='Туалетная вода')},
-        {'name': 'Увлажняющий крем', 'description': 'Для сухой кожи', 'price': 2000, 'category': SmallCategories.objects.get(name='Кремы')},
+        {'name': 'Тональный крем', 'description': 'Легкий тон', 'price': 1500,
+         'category': SmallCategories.objects.filter(name='Тональные средства').first()},
+        {'name': 'Туалетная вода Chanel', 'description': 'Аромат цветов', 'price': 5000,
+         'category': SmallCategories.objects.filter(name='Туалетная вода').first()},
+        {'name': 'Увлажняющий крем', 'description': 'Для сухой кожи', 'price': 2000,
+         'category': SmallCategories.objects.filter(name='Кремы').first()},
     ]
     for i in range(20):  # Создаем 20 товаров
-        item = items[i % len(items)]
+        item = random.choice(items)  # Выбираем случайный товар из списка
         Items.objects.create(
             Item_ID=random.randint(10000, 99999),
             name=f"{item['name']} {i + 1}",
