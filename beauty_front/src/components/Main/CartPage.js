@@ -66,43 +66,6 @@ function CartPage() {
         return items.find(item => item.name === itemName);
     };
 
-    const handleCheckout = async () => {
-        try {
-            const userResponse = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/auth/users/me/`, {
-                headers: {
-                    Authorization: `JWT ${Cookies.get('token')}`
-                }
-            });
-
-            const orderResponse = await axios.post(`${process.env.REACT_APP_API_BASE_URL}/orders/`, {
-                user: userResponse.data.id,
-                address: "Адрес доставки",
-                status: "В обработке",
-                number_of_order: `ORDER-${Date.now()}`,
-                date_of_delivery: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-                date_made: new Date().toISOString().split('T')[0],
-                delivery_mode: "Стандартная доставка",
-                chart_id: cartItems.Chart_ID // Если есть Chart_ID
-            }, {
-                headers: {
-                    Authorization: `JWT ${Cookies.get('token')}`
-                }
-            });
-
-            await axios.delete(`${process.env.REACT_APP_API_BASE_URL}/chart/`, {
-                headers: {
-                    Authorization: `JWT ${Cookies.get('token')}`
-                }
-            });
-
-            setCartItems([]);
-
-            alert('Заказ успешно оформлен!');
-        } catch (error) {
-            console.error('Ошибка оформления заказа:', error);
-            alert('Ошибка при оформлении заказа. Проверьте консоль для подробностей.');
-        }
-    };
 const placeOrder = async () => {
     try {
         const userResponse = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/auth/users/me/`, {
@@ -121,7 +84,11 @@ const placeOrder = async () => {
             date_of_delivery: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
             date_made: new Date().toISOString().split('T')[0],
             delivery_mode: "Стандартная доставка",
-            chart_id: 1
+            total: cartItems.reduce((sum, item) => {
+                const itemInfo = getItemInfo(item.item_name);
+                return sum + (itemInfo ? itemInfo.price * item.item_count : 0);
+            }, 0)
+            
         }, {
             headers: {
                 Authorization: `JWT ${Cookies.get('token')}`
@@ -144,7 +111,7 @@ const placeOrder = async () => {
     } catch (error) {
         console.error('Error placing the order:', error);
     }
-    await axios.delete(`${process.env.REACT_APP_API_BASE_URL}/chart/${1}/`, {
+    await axios.delete(`${process.env.REACT_APP_API_BASE_URL}/chart/${cartItems[0].chart_id}/`, {
         headers: {
             Authorization: `JWT ${Cookies.get('token')}`
         }

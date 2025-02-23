@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { AppBar, Toolbar, Typography, Button, IconButton, Badge, TextField } from '@mui/material';
-import SearchIcon from '@mui/icons-material/Search';
+import { AppBar, Toolbar, Typography, Button, IconButton, Badge } from '@mui/material';
+
 import { AccountCircle, ShoppingCart } from '@mui/icons-material';
 import { Link, useNavigate } from 'react-router-dom';
 import Cookies from 'js-cookie';
@@ -16,9 +16,8 @@ function Header({ cartCount }) {
 
     const handleSearch = (event) => {
         event.preventDefault();
-        // Логика поиска
         console.log('Searching for:', searchTerm);
-        // Здесь можно добавить логику для перенаправления на страницу результатов поиска
+        
     };
 
     return (
@@ -34,19 +33,7 @@ function Header({ cartCount }) {
                     </Link>
                 </Typography>
 
-                <form onSubmit={handleSearch} style={{ display: 'flex', alignItems: 'center', marginRight: '16px' }}>
-                    <TextField
-                        variant="outlined"
-                        size="small"
-                        label="Поиск..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        sx={{ backgroundColor: 'white' }}
-                    />
-                    <IconButton color="inherit" type="submit">
-                        <SearchIcon />
-                    </IconButton>
-                </form>
+                
 
                 <IconButton color="inherit" component={Link} to="/profile">
                     <AccountCircle />

@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {useParams} from 'react-router-dom';
-import { Button, Container, Typography, Box, Card, CardContent, CardMedia, Pagination, IconButton, Snackbar } from '@mui/material';
+import { Button, Container, Typography, Box, Card, CardContent, CardMedia, Pagination, IconButton, Snackbar,TextField } from '@mui/material';
 import axios from 'axios';
+import SearchIcon from '@mui/icons-material/Search';
 import { AccountCircle, ShoppingCart } from '@mui/icons-material';
 import Cookies from 'js-cookie';
 
@@ -15,7 +16,8 @@ function MainPage() {
     const [item, setItem] = useState(null);
     const [chartItems, setChartItems] = useState([]);
     const [quantity, setQuantity] = useState(1);
-
+    const [searchTerm, setSearchTerm] = useState('');
+    
     const handleClick = () => {
         setOpen(true);
       };
@@ -24,10 +26,13 @@ function MainPage() {
         if (reason === 'clickaway') {
           return;
         }
-    
         setOpen(false);
       };
-
+    const handleSearch = (event) => {
+        event.preventDefault();
+        console.log('Searching for:', searchTerm);
+        
+    };
 
     const addToCart = async (Item_ID) => {
         try {
@@ -119,7 +124,7 @@ function MainPage() {
     useEffect(() => {
         const fetchItems = async () => {
             try {
-                const response = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/items/`);
+                const response = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/items/?price=&name=&category=&max_pr=&min_pr=&search= ${searchTerm}`);
                 setItems(response.data);
             } catch (error) {
                 console.error('Ошибка загрузки товаров:', error);
@@ -127,7 +132,7 @@ function MainPage() {
         };
 
         fetchItems();
-    }, []);
+    }, [searchTerm]);
 
     // Calculate current items for the current page
     const indexOfLastItem = page * itemsPerPage;
@@ -143,16 +148,33 @@ function MainPage() {
 
     return (
         <Box sx={{ display: 'flex', flexDirection: 'column' }}>
-            <Container sx={{ flexGrow: 1, py: 4 }}>
-                <Typography variant="h4" component="h1" gutterBottom sx={{fontFamily: 'Scada, sans-serif', fontWeight: '600'}}>
+            <Container sx={{ flexGrow: 1, py: 3,  }}>
+           
+                    <form onSubmit={handleSearch} style={{ display: 'flex', alignItems: 'center', marginRight: '16px' }}>
+                    <Typography variant="h4" component="h1" gutterBottom sx={{fontFamily: 'Scada, sans-serif', fontWeight: '600', mt:1}}>
                     Главная страница
-                </Typography>
+                    </Typography>
+                    <TextField
+                        variant="outlined"
+                        size="small"
+                        label="Поиск..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        sx={{ backgroundColor: 'white', mx:3 }}
+                    />
+                    <IconButton color="inherit" type="submit">
+                        <SearchIcon />
+                    </IconButton>
+                </form>
+               
+                
                 <Box
                     sx={{
                         display: 'flex',
                         flexWrap: 'wrap',
                         gap: 3,
                         justifyContent: 'center',
+                        mt:3
                     }}
                 >
                     {currentItems.map((item) => (
@@ -209,7 +231,7 @@ function MainPage() {
                                     -
                                 </Button>
                                 <Typography gutterBottom sx={{ fontFamily: 'Scada, sans-serif', fontWeight: '400', mx: 2 , color: '#A8A8A8',}}>
-                                   кол-во
+                                   
                                 </Typography>
                                 <Button variant="contained" color="primary" value= {item.Item_ID} onClick={(e) => addToCart(e.currentTarget.value)}>
                                     +
