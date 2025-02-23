@@ -163,3 +163,28 @@ def order_summary(request):
         order_summary[order_user].append({'item_name': item_name, 'item_count': item_count, 'order_id': order_id})
 
     return Response(order_summary)
+
+
+from django.http import JsonResponse
+from .models import BigCategories, SmallCategories
+
+from django.http import JsonResponse
+from rest_framework.decorators import api_view
+from .models import BigCategories, SmallCategories
+
+
+@api_view(['GET'])
+def get_categories(request):
+    big_cats = BigCategories.objects.all()
+    categories = []
+
+    for big_cat in big_cats:
+        small_cats = SmallCategories.objects.filter(parent=big_cat)
+        small_cat_list = [{'name': small_cat.name} for small_cat in small_cats]
+
+        categories.append({
+            'big_cat': big_cat.name,
+            'small_cats': small_cat_list
+        })
+
+    return JsonResponse({'categories': categories})

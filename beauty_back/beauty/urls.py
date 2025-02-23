@@ -24,4 +24,5 @@ urlpatterns = [
     path('chart_summary/', all_views.chart_summary, name='chart_summary'),
     path('make_order/', all_views.make_order, name='make_order'),
     path('order_summary/', all_views.order_summary, name='order_summary'),
+    path('get_categories/', all_views.get_categories, name='get_categories'),
 ]

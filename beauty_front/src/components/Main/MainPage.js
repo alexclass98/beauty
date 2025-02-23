@@ -1,22 +1,33 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {useParams} from 'react-router-dom';
-import { Button, Container, Typography, Box, Card, CardContent, CardMedia, Pagination, IconButton, Snackbar,TextField } from '@mui/material';
+import { Button, Container, Typography, Box, Card, CardContent, CardMedia, Pagination, IconButton, Snackbar,TextField, Drawer } from '@mui/material';
 import axios from 'axios';
 import SearchIcon from '@mui/icons-material/Search';
-import { AccountCircle, ShoppingCart } from '@mui/icons-material';
+import {  ShoppingCart } from '@mui/icons-material';
+import FilterListOutlinedIcon from '@mui/icons-material/FilterListOutlined';
 import Cookies from 'js-cookie';
+import { SimpleTreeView, TreeItem } from '@mui/x-tree-view';
+
 
 function MainPage() {
     const [items, setItems] = useState([]);
     const [page, setPage] = useState(1);
     const itemsPerPage = 6; // Specify how many items per page
-    const [open, setOpen] = React.useState(false);
+    const [open, setOpen] = useState(false);
     const {id} = useParams();
     const [item, setItem] = useState(null);
     const [chartItems, setChartItems] = useState([]);
     const [quantity, setQuantity] = useState(1);
     const [searchTerm, setSearchTerm] = useState('');
+    const [openDrawer, setOpenDrawer] = React.useState(false);
+    const [smallCats, setSmallCats] = useState([]);
+    const [bigCats, setBigCats] = useState([]);
+    const [categories, setCategories] = useState([]);
+
+    const toggleDrawer = (newOpen) => () => {
+        setOpenDrawer(newOpen);
+    };
     
     const handleClick = () => {
         setOpen(true);
@@ -120,7 +131,6 @@ function MainPage() {
         }
     };
 
-
     useEffect(() => {
         const fetchItems = async () => {
             try {
@@ -134,7 +144,33 @@ function MainPage() {
         fetchItems();
     }, [searchTerm]);
 
-    // Calculate current items for the current page
+    useEffect(() => {
+        const fetchCats= async () => {
+            try {
+                // const bigCatsResponse = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/big_cat/`);
+                // setBigCats(bigCatsResponse.data);
+                // const smallCatsResponse = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/small_cat/`);
+                // setSmallCats(smallCatsResponse.data);
+                const categoryResp = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/get_categories/`);
+                setCategories(categoryResp.data);
+                console.log(categories)
+            } catch (error) {
+                console.error('Ошибка загрузки категорий:', error);
+            }
+        };
+
+        fetchCats();
+    }, []);
+
+    // const renderTree = (nodes) => (
+    //     <TreeItem key={nodes.big_cat} nodeId={nodes.id} label={nodes.big_cat}>
+    //         {Array.isArray(nodes.small_cats) ? nodes.small_cats.map((child, index) => (
+    //             <TreeItem key={`${nodes.big_cat}-${index}`} nodeId={`${nodes.big_cat}-${index}`} label={child.name} />
+    //         )) : null}
+    //     </TreeItem>
+    // );
+    
+
     const indexOfLastItem = page * itemsPerPage;
     const indexOfFirstItem = indexOfLastItem - itemsPerPage;
     const currentItems = items.slice(indexOfFirstItem, indexOfLastItem);
@@ -149,11 +185,29 @@ function MainPage() {
     return (
         <Box sx={{ display: 'flex', flexDirection: 'column' }}>
             <Container sx={{ flexGrow: 1, py: 3,  }}>
-           
                     <form onSubmit={handleSearch} style={{ display: 'flex', alignItems: 'center', marginRight: '16px' }}>
                     <Typography variant="h4" component="h1" gutterBottom sx={{fontFamily: 'Scada, sans-serif', fontWeight: '600', mt:1}}>
                     Главная страница
                     </Typography>
+                    <Button onClick={toggleDrawer(true)} variant="outlined" size="small">Фильтры <FilterListOutlinedIcon/></Button>
+                        <Drawer open={openDrawer} onClose={toggleDrawer(false)}>
+                            <Container sx={{display: 'flex', flexDirection: 'row'}}>
+                                <Typography  gutterBottom sx={{fontFamily: 'Scada, sans-serif', fontWeight: '400', mt:2,}}>
+                                    Цена от:
+                                </Typography>
+                            <TextField id="filled-basic" label="Filled" variant="filled" />
+                                <Typography  gutterBottom sx={{fontFamily: 'Scada, sans-serif', fontWeight: '400', mt:2}}>
+                                    до:
+                                </Typography>
+                            <TextField id="filled-basic" label="Filled" variant="filled" />
+                            </Container>
+                            <Typography  gutterBottom sx={{fontFamily: 'Scada, sans-serif', fontWeight: '500', mt:1, mx:3}}>
+                                    Категории
+                            </Typography>
+                            <SimpleTreeView >
+                                {/* {Object.values(cats).map((category, index) => renderTree(category, index))} */}
+                            </SimpleTreeView>
+                        </Drawer>
                     <TextField
                         variant="outlined"
                         size="small"
@@ -165,9 +219,7 @@ function MainPage() {
                     <IconButton color="inherit" type="submit">
                         <SearchIcon />
                     </IconButton>
-                </form>
-               
-                
+                </form>               
                 <Box
                     sx={{
                         display: 'flex',
