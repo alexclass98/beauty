@@ -56,7 +56,7 @@ class ItemsFilter(filters.FilterSet):
 
     class Meta:
         model = Items
-        fields = ['price', 'name', 'category']
+        fields = ['price', 'name', 'category', 'description']
 
 
 class ChartItemSerializer(serializers.ModelSerializer):

@@ -55,9 +55,7 @@ class Chart(models.Model):
     Chart_ID = models.AutoField(primary_key=True)
     # product = models.ForeignKey(Items, models.DO_NOTHING, db_column='product')
     user = models.OneToOneField(AuthUser, on_delete=models.CASCADE)
-    # checked_out = models.IntegerField(default=0)
-    # quantity = models.IntegerField()
-    # price = models.IntegerField()
+
 
     class Meta:
         managed = True
@@ -77,10 +75,11 @@ class Order(models.Model):
     user = models.ForeignKey(AuthUser, models.DO_NOTHING, db_column='auth_user', to_field='id')
     address = models.CharField(max_length=255)
     status = models.CharField(max_length=255)
-    number_of_order = models.IntegerField(max_length=45)
+    number_of_order = models.IntegerField()
     date_of_delivery = models.DateField()
     date_made = models.DateField()
     delivery_mode = models.CharField(max_length=45)
+    total = models.IntegerField(max_length=45, default=0)
 
     class Meta:
         managed = True

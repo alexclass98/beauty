@@ -37,7 +37,7 @@ class ItemsViewSet(viewsets.ModelViewSet):
     serializer_class = ItemsSerializer
     filter_backends = (DjangoFilterBackend,)
     filterset_class = ItemsFilter
-    search_fields = ['^name', '^category']
+    search_fields = ['^name', '^category', '^description']
 
 
 class ChartViewSet(viewsets.ModelViewSet):
@@ -101,11 +101,13 @@ def chart_summary(request):
         chart_id = item.chart_id  # Обратитесь к полю chart_id
         item_name = item.item.name
         item_count = item.count
+        chart_user = item.chart.user.id
 
-        if chart_id not in chart_summary:
-            chart_summary[chart_id] = []
+        if chart_user not in chart_summary:
+            chart_summary[chart_user] = []
 
-        chart_summary[chart_id].append({'item_name': item_name, 'item_count': item_count})
+        chart_summary[chart_user].append({'item_name': item_name, 'item_count': item_count, 'chart_id': chart_id})
+
     return Response(chart_summary)
 
 class OrderViewSet(viewsets.ModelViewSet):
@@ -142,20 +144,22 @@ def make_order(request):
         return Response(error_message, status=400)
 
 
+
 @api_view(['GET'])
 def order_summary(request):
-    order_items = OrderItems.objects.all()
+    order_items = OrderItems.objects.all()  # Получаем все записи в корзине
 
-    order_summary = {}
+    order_summary = {}  # Словарь для хранения сводки товаров по корзинам
 
-    for item in order_items:
-        order_id = item.order_id
-        item_name = item.item.name
-        item_count = item.count
+    for order in order_items:
+        order_id = order.order_id  # Обратитесь к полю chart_id
+        item_name = order.item.name
+        item_count = order.count
+        order_user = order.order.user.id
 
-        if order_id not in order_summary:
-            order_summary[order_id] = []
+        if order_user not in order_summary:
+            order_summary[order_user] = []
 
-        order_summary[order_id].append({'item_name': item_name, 'item_count': item_count})
+        order_summary[order_user].append({'item_name': item_name, 'item_count': item_count, 'order_id': order_id})
 
     return Response(order_summary)
