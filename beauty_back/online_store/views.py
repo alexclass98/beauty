@@ -180,11 +180,13 @@ def get_categories(request):
 
     for big_cat in big_cats:
         small_cats = SmallCategories.objects.filter(parent=big_cat)
-        small_cat_list = [{'name': small_cat.name} for small_cat in small_cats]
+        small_cat_list = [{'id': small_cat.SmallCategory_ID, 'label':small_cat.name, 'name': small_cat.name} for small_cat in small_cats]
 
         categories.append({
+            'id': big_cat.BigCategory_ID,
             'big_cat': big_cat.name,
-            'small_cats': small_cat_list
+            'label': big_cat.name,
+            'children': small_cat_list
         })
 
     return JsonResponse({'categories': categories})

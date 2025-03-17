@@ -7,7 +7,8 @@ import SearchIcon from '@mui/icons-material/Search';
 import {  ShoppingCart } from '@mui/icons-material';
 import FilterListOutlinedIcon from '@mui/icons-material/FilterListOutlined';
 import Cookies from 'js-cookie';
-import { SimpleTreeView, TreeItem } from '@mui/x-tree-view';
+import { RichTreeView } from '@mui/x-tree-view/RichTreeView';
+import { TreeItem } from '@mui/x-tree-view/TreeItem';
 
 
 function MainPage() {
@@ -24,6 +25,7 @@ function MainPage() {
     const [smallCats, setSmallCats] = useState([]);
     const [bigCats, setBigCats] = useState([]);
     const [categories, setCategories] = useState([]);
+   
 
     const toggleDrawer = (newOpen) => () => {
         setOpenDrawer(newOpen);
@@ -147,13 +149,11 @@ function MainPage() {
     useEffect(() => {
         const fetchCats= async () => {
             try {
-                // const bigCatsResponse = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/big_cat/`);
-                // setBigCats(bigCatsResponse.data);
-                // const smallCatsResponse = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/small_cat/`);
-                // setSmallCats(smallCatsResponse.data);
+                
                 const categoryResp = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/get_categories/`);
-                setCategories(categoryResp.data);
+                setCategories(categoryResp.data.categories);
                 console.log(categories)
+
             } catch (error) {
                 console.error('Ошибка загрузки категорий:', error);
             }
@@ -162,14 +162,7 @@ function MainPage() {
         fetchCats();
     }, []);
 
-    // const renderTree = (nodes) => (
-    //     <TreeItem key={nodes.big_cat} nodeId={nodes.id} label={nodes.big_cat}>
-    //         {Array.isArray(nodes.small_cats) ? nodes.small_cats.map((child, index) => (
-    //             <TreeItem key={`${nodes.big_cat}-${index}`} nodeId={`${nodes.big_cat}-${index}`} label={child.name} />
-    //         )) : null}
-    //     </TreeItem>
-    // );
-    
+
 
     const indexOfLastItem = page * itemsPerPage;
     const indexOfFirstItem = indexOfLastItem - itemsPerPage;
@@ -179,7 +172,6 @@ function MainPage() {
     const handlePageChange = (event, value) => {
         setPage(value);
     };
-
     
 
     return (
@@ -191,22 +183,21 @@ function MainPage() {
                     </Typography>
                     <Button onClick={toggleDrawer(true)} variant="outlined" size="small">Фильтры <FilterListOutlinedIcon/></Button>
                         <Drawer open={openDrawer} onClose={toggleDrawer(false)}>
-                            <Container sx={{display: 'flex', flexDirection: 'row'}}>
-                                <Typography  gutterBottom sx={{fontFamily: 'Scada, sans-serif', fontWeight: '400', mt:2,}}>
+                            <Container sx={{display: 'flex', flexDirection: 'row', mt:1}}>
+                                {/* <Typography  gutterBottom sx={{fontFamily: 'Scada, sans-serif', fontWeight: '400', mt:2,}}>
                                     Цена от:
                                 </Typography>
                             <TextField id="filled-basic" label="Filled" variant="filled" />
                                 <Typography  gutterBottom sx={{fontFamily: 'Scada, sans-serif', fontWeight: '400', mt:2}}>
                                     до:
                                 </Typography>
-                            <TextField id="filled-basic" label="Filled" variant="filled" />
+                            <TextField id="filled-basic" label="Filled" variant="filled" /> */}
                             </Container>
                             <Typography  gutterBottom sx={{fontFamily: 'Scada, sans-serif', fontWeight: '500', mt:1, mx:3}}>
                                     Категории
                             </Typography>
-                            <SimpleTreeView >
-                                {/* {Object.values(cats).map((category, index) => renderTree(category, index))} */}
-                            </SimpleTreeView>
+                            <RichTreeView items={categories} onItemClick={(event, itemId) => alert(itemId)}/>
+                                
                         </Drawer>
                     <TextField
                         variant="outlined"

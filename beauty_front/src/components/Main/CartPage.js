@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Container, Typography, Box, Button, List, ListItem, ListItemText,  Card, CardContent, CardMedia, Snackbar} from '@mui/material';
+import { Container, Typography, Box, Button,   Card, CardContent, CardMedia, Snackbar} from '@mui/material';
 import {useParams} from 'react-router-dom';
 import axios from 'axios';
 import Cookies from 'js-cookie';
@@ -10,11 +10,19 @@ function CartPage() {
     const [cartItems, setCartItems] = useState([]);
     const [user, setUser] = useState(null);
     const [items, setItems] = useState([]);
-    const [open, setOpen] = React.useState(false);
+    const [open, setOpen] = useState(false);
+    const [openDel, setOpenDel] = useState(false);
 
     const handleClick = () => {
         setOpen(true);
+        handleCloseDel()
     };
+
+    const handleOpenDel = () => {
+        setOpenDel(true);
+        handleClose()
+    };
+
 
     const handleClose = (event, reason) => {
         if (reason === 'clickaway') {
@@ -23,6 +31,15 @@ function CartPage() {
 
         setOpen(false);
     };
+
+    const handleCloseDel = (event, reason) => {
+        if (reason === 'clickaway') {
+            return;
+        }
+
+        setOpenDel(false);
+    };
+
 
     useEffect(() => {
         const fetchData = async () => {
@@ -46,6 +63,7 @@ function CartPage() {
                 console.log('User Cart:', userCart);
 
                 setCartItems(userCart);
+                console.log(cartItems)
 
                 const itemsResponse = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/items/`, {
                     headers: {
@@ -64,6 +82,60 @@ function CartPage() {
 
     const getItemInfo = (itemName) => {
         return items.find(item => item.name === itemName);
+    };
+    const addToCart = async (it) => {
+        try {
+            const userResponse = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/auth/users/me/`, {
+                headers: {
+                    Authorization: `JWT ${Cookies.get('token')}`
+                }
+            });
+            try {
+                const response = await axios.post(`${process.env.REACT_APP_API_BASE_URL}/chart/`, {
+                    user: userResponse.data.id,
+                    // Chart_ID: 1,
+                    // price: item.price,
+                    // count: quantity
+                }, {
+                    headers: {
+                        Authorization: `JWT ${Cookies.get('token')}`
+                    }
+                });
+            
+                // Обработка успешного ответа
+                console.log('Chart created successfully:', response.data);
+            } catch (error) {
+                if (error.response && error.response.data && error.response.data.user) {
+                    // Проверка на наличие ошибки "chart with this user already exists"
+                    console.error('Error:', error.response.data.user[0]);
+                    // Здесь можно добавить логику, чтобы уведомить пользователя о существующем графике
+                } else {
+                    // Обработка других ошибок
+                    console.error('An error occurred:', error.message);
+                }
+            }
+            
+            await axios.post(`${process.env.REACT_APP_API_BASE_URL}/add_to_cart/`, {
+                user: userResponse.data.id,
+                item: id,
+                // price: item.price,
+                // count: quantity
+            }, {
+                headers: {
+                    Authorization: `JWT ${Cookies.get('token')}`
+                }
+            });
+            // const updatedItem = { ...item, amount: item.amount - quantity };
+            // await axios.put(`${process.env.REACT_APP_API_BASE_URL}/items/${id}/`, updatedItem, {
+            //     headers: {
+            //         Authorization: `JWT ${Cookies.get('token')}`
+            //     }
+            // });
+            // setItem(updatedItem);
+            // handleClick()
+        } catch (error) {
+            console.error('Ошибка добавления в корзину:', error);
+        }
     };
 
 const placeOrder = async () => {
@@ -134,14 +206,14 @@ const placeOrder = async () => {
                             image={itemInfo.img || 'https://via.placeholder.com/300'}
                             alt={itemInfo.name}
                         />
-                        <Button variant="contained" color="primary" size="small" onClick={handleClick}
+                        <Button variant="contained" color="primary" size="small" onClick={handleOpenDel}
                                 sx={{marginLeft: 20, height: '30px', width: '30px', mt: 4}}>
                             -
                         </Button>
                         <Snackbar
-                            open={open}
+                            open={openDel}
                             autoHideDuration={5000}
-                            onClose={handleClose}
+                            onClose={handleCloseDel}
                             message="Товар удалён из корзины"
                         />
                         <Typography gutterBottom sx={{
