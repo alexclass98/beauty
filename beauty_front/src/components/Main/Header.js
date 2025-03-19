@@ -1,23 +1,21 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { AppBar, Toolbar, Typography, Button, IconButton, Badge } from '@mui/material';
-
 import { AccountCircle, ShoppingCart } from '@mui/icons-material';
 import { Link, useNavigate } from 'react-router-dom';
 import Cookies from 'js-cookie';
 
 function Header({ cartCount }) {
-    const [searchTerm, setSearchTerm] = useState('');
+    const [isAuthenticated, setIsAuthenticated] = useState(false);
     const navigate = useNavigate();
+
+    useEffect(() => {
+        setIsAuthenticated(!!Cookies.get('token'));
+    }, []);
 
     const handleLogout = () => {
         Cookies.remove('token');
+        setIsAuthenticated(false);
         navigate('/login');
-    };
-
-    const handleSearch = (event) => {
-        event.preventDefault();
-        console.log('Searching for:', searchTerm);
-        
     };
 
     return (
@@ -33,8 +31,6 @@ function Header({ cartCount }) {
                     </Link>
                 </Typography>
 
-                
-
                 <IconButton color="inherit" component={Link} to="/profile">
                     <AccountCircle />
                 </IconButton>
@@ -45,9 +41,15 @@ function Header({ cartCount }) {
                     </Badge>
                 </IconButton>
 
-                <Button color="inherit" onClick={handleLogout}>
-                    Авторизация
-                </Button>
+                {isAuthenticated ? (
+                    <Button color="inherit" component={Link} to="/" onClick={handleLogout} >
+                        выход
+                    </Button>
+                ) : (
+                    <Button color="inherit" component={Link} to="/login">
+                        авторизация
+                    </Button>
+                )}
             </Toolbar>
         </AppBar>
     );

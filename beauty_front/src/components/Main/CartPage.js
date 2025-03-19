@@ -6,12 +6,14 @@ import Cookies from 'js-cookie';
 import {Link} from 'react-router-dom';
 
 function CartPage() {
-    const {id} = useParams();
+   
+
     const [cartItems, setCartItems] = useState([]);
     const [user, setUser] = useState(null);
     const [items, setItems] = useState([]);
     const [open, setOpen] = useState(false);
     const [openDel, setOpenDel] = useState(false);
+    const [update, setUpdate] = useState(false);
 
     const handleClick = () => {
         setOpen(true);
@@ -78,22 +80,53 @@ function CartPage() {
         };
 
         fetchData();
-    }, []);
+    }, [update]);
 
     const getItemInfo = (itemName) => {
         return items.find(item => item.name === itemName);
     };
+
     const addToCart = async (it) => {
+        console.log(it)
         try {
             const userResponse = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/auth/users/me/`, {
                 headers: {
                     Authorization: `JWT ${Cookies.get('token')}`
                 }
             });
+            
+            await axios.post(`${process.env.REACT_APP_API_BASE_URL}/add_to_cart/`, {
+                user: userResponse.data.id,
+                item: it.Item_ID,
+            }, {
+                headers: {
+                    Authorization: `JWT ${Cookies.get('token')}`
+                }
+            });
+            const updatedItem = { ...it, amount: it.amount - 1 };
+            await axios.put(`${process.env.REACT_APP_API_BASE_URL}/items/${it.Item_ID}/`, updatedItem, {
+                headers: {
+                    Authorization: `JWT ${Cookies.get('token')}`
+                }
+            });
+           
+            handleClick()
+            setUpdate(!update)
+        } catch (error) {
+            console.error('Ошибка добавления в корзину:', error);
+        }
+    };
+
+       const removeFromCart = async (it) => {
             try {
-                const response = await axios.post(`${process.env.REACT_APP_API_BASE_URL}/chart/`, {
+                const userResponse = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/auth/users/me/`, {
+                    headers: {
+                        Authorization: `JWT ${Cookies.get('token')}`
+                    }
+                });
+                const response = await axios.post(`${process.env.REACT_APP_API_BASE_URL}/remove_from_chart/`, {
                     user: userResponse.data.id,
-                    // Chart_ID: 1,
+                    item: it.Item_ID,
                     // price: item.price,
                     // count: quantity
                 }, {
@@ -101,42 +134,23 @@ function CartPage() {
                         Authorization: `JWT ${Cookies.get('token')}`
                     }
                 });
-            
-                // Обработка успешного ответа
-                console.log('Chart created successfully:', response.data);
+                if (response.data.status === "Item not found in the chart.") {
+                    console.warn("Item not found in the chart. Skipping update.");
+                    return;
+                }
+    
+                const updatedItem = { ...it, amount: it.amount + 1 };
+                await axios.put(`${process.env.REACT_APP_API_BASE_URL}/items/${it.Item_ID}/`, updatedItem, {
+                    headers: {
+                        Authorization: `JWT ${Cookies.get('token')}`
+                    }
+                });
+                setUpdate(!update)
+                handleOpenDel()
             } catch (error) {
-                if (error.response && error.response.data && error.response.data.user) {
-                    // Проверка на наличие ошибки "chart with this user already exists"
-                    console.error('Error:', error.response.data.user[0]);
-                    // Здесь можно добавить логику, чтобы уведомить пользователя о существующем графике
-                } else {
-                    // Обработка других ошибок
-                    console.error('An error occurred:', error.message);
-                }
+                console.error('Ошибка удаления:', error);
             }
-            
-            await axios.post(`${process.env.REACT_APP_API_BASE_URL}/add_to_cart/`, {
-                user: userResponse.data.id,
-                item: id,
-                // price: item.price,
-                // count: quantity
-            }, {
-                headers: {
-                    Authorization: `JWT ${Cookies.get('token')}`
-                }
-            });
-            // const updatedItem = { ...item, amount: item.amount - quantity };
-            // await axios.put(`${process.env.REACT_APP_API_BASE_URL}/items/${id}/`, updatedItem, {
-            //     headers: {
-            //         Authorization: `JWT ${Cookies.get('token')}`
-            //     }
-            // });
-            // setItem(updatedItem);
-            // handleClick()
-        } catch (error) {
-            console.error('Ошибка добавления в корзину:', error);
-        }
-    };
+        };
 
 const placeOrder = async () => {
     try {
@@ -196,7 +210,7 @@ const placeOrder = async () => {
     return (
         <Container>
             <Typography variant="h4" gutterBottom>Корзина</Typography>
-            {cartItems.map((cartItem, index) => {
+            {cartItems.sort((a, b) => a.item_name.localeCompare(b.item_name)).map((cartItem, index) => {
                 const itemInfo = getItemInfo(cartItem.item_name) || {}; // Убедитесь, что itemInfo является объектом
                 return (
                     <Card key={index} sx={{display: 'flex', mt: 2, width: '60%'}}>
@@ -206,7 +220,7 @@ const placeOrder = async () => {
                             image={itemInfo.img || 'https://via.placeholder.com/300'}
                             alt={itemInfo.name}
                         />
-                        <Button variant="contained" color="primary" size="small" onClick={handleOpenDel}
+                        <Button variant="contained" color="primary" size="small" onClick={()=>removeFromCart(itemInfo)}
                                 sx={{marginLeft: 20, height: '30px', width: '30px', mt: 4}}>
                             -
                         </Button>
@@ -225,7 +239,7 @@ const placeOrder = async () => {
                         }}>
                             {cartItem.item_count}
                         </Typography>
-                        <Button variant="contained" color="primary" size="small" onClick={handleClick}
+                        <Button variant="contained" color="primary" size="small" onClick={()=>addToCart(itemInfo)}
                                 sx={{marginLeft: 4, height: '30px', width: '30px', mt: 4}}>
                             +
                         </Button>

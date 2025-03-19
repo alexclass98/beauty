@@ -25,6 +25,8 @@ function MainPage() {
     const [smallCats, setSmallCats] = useState([]);
     const [bigCats, setBigCats] = useState([]);
     const [categories, setCategories] = useState([]);
+    const [openDel, setOpenDel] = useState(false);
+    const [openNF, setOpenNF] = useState(false);
    
 
     const toggleDrawer = (newOpen) => () => {
@@ -33,21 +35,55 @@ function MainPage() {
     
     const handleClick = () => {
         setOpen(true);
-      };
-    
-      const handleClose = (event, reason) => {
+        handleCloseDel()
+    };
+
+    const handleOpenDel = () => {
+        setOpenDel(true);
+        handleClose()
+    };
+
+    const handleOpenNF = () => {
+        setOpenNF(true);
+        handleNotFound()
+    };
+
+    const handleClose = (event, reason) => {
         if (reason === 'clickaway') {
-          return;
+            return;
         }
+
         setOpen(false);
-      };
+        setOpenNF(false)
+    };
+
+    const handleCloseDel = (event, reason) => {
+        if (reason === 'clickaway') {
+            return;
+        }
+
+        setOpenDel(false);
+        setOpenNF(false)
+    };
+
+    
+    const handleNotFound = (event, reason) => {
+        if (reason === 'clickaway') {
+            return;
+        }
+
+        setOpenDel(false);
+        setOpen(false);
+    };
+
+
     const handleSearch = (event) => {
         event.preventDefault();
         console.log('Searching for:', searchTerm);
         
     };
 
-    const addToCart = async (Item_ID) => {
+    const addToCart = async (it) => {
         try {
             const userResponse = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/auth/users/me/`, {
                 headers: {
@@ -81,7 +117,7 @@ function MainPage() {
             
             await axios.post(`${process.env.REACT_APP_API_BASE_URL}/add_to_cart/`, {
                 user: userResponse.data.id,
-                item: Item_ID,
+                item: it.Item_ID,
                 // price: item.price,
                 // count: quantity
             }, {
@@ -89,30 +125,29 @@ function MainPage() {
                     Authorization: `JWT ${Cookies.get('token')}`
                 }
             });
-            const updatedItem = { ...item, amount: item.amount - quantity };
-            await axios.put(`${process.env.REACT_APP_API_BASE_URL}/items/${id}/`, updatedItem, {
+            const updatedItem = { ...it, amount: it.amount - 1 };
+            await axios.put(`${process.env.REACT_APP_API_BASE_URL}/items/${it.Item_ID}/`, updatedItem, {
                 headers: {
                     Authorization: `JWT ${Cookies.get('token')}`
                 }
             });
-            setItem(updatedItem);
-            handleClick()
+          handleClick()
         } catch (error) {
             console.error('Ошибка добавления в корзину:', error);
         }
     };
 
 
-   const removeFromCart = async Item_ID => {
+   const removeFromCart = async (it) => {
         try {
             const userResponse = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/auth/users/me/`, {
                 headers: {
                     Authorization: `JWT ${Cookies.get('token')}`
                 }
             });
-            await axios.post(`${process.env.REACT_APP_API_BASE_URL}/remove_from_chart/`, {
+            const response = await axios.post(`${process.env.REACT_APP_API_BASE_URL}/remove_from_chart/`, {
                 user: userResponse.data.id,
-                item: Item_ID,
+                item: it.Item_ID,
                 // price: item.price,
                 // count: quantity
             }, {
@@ -120,14 +155,21 @@ function MainPage() {
                     Authorization: `JWT ${Cookies.get('token')}`
                 }
             });
-            const updatedItem = { ...item, amount: item.amount + quantity };
-            await axios.put(`${process.env.REACT_APP_API_BASE_URL}/items/${id}/`, updatedItem, {
+
+            if (response.data.status === "Item not found in the chart.") {
+                console.warn("Item not found in the chart. Skipping update.");
+                handleOpenNF()
+                return;
+            }
+
+            const updatedItem = { ...it, amount: it.amount + 1 };
+            await axios.put(`${process.env.REACT_APP_API_BASE_URL}/items/${it.Item_ID}/`, updatedItem, {
                 headers: {
                     Authorization: `JWT ${Cookies.get('token')}`
                 }
             });
-            setItem(updatedItem);
-            alert('Товар удалён из корзины!');
+           
+            handleOpenDel()
         } catch (error) {
             console.error('Ошибка удаления:', error);
         }
@@ -136,7 +178,7 @@ function MainPage() {
     useEffect(() => {
         const fetchItems = async () => {
             try {
-                const response = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/items/?price=&name=&category=&max_pr=&min_pr=&search= ${searchTerm}`);
+                const response = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/items/?price=&name=&category=${smallCats}&max_pr=&min_pr=&search= ${searchTerm}`);
                 setItems(response.data);
             } catch (error) {
                 console.error('Ошибка загрузки товаров:', error);
@@ -144,7 +186,7 @@ function MainPage() {
         };
 
         fetchItems();
-    }, [searchTerm]);
+    }, [searchTerm, smallCats]);
 
     useEffect(() => {
         const fetchCats= async () => {
@@ -162,7 +204,7 @@ function MainPage() {
         fetchCats();
     }, []);
 
-
+    
 
     const indexOfLastItem = page * itemsPerPage;
     const indexOfFirstItem = indexOfLastItem - itemsPerPage;
@@ -181,7 +223,7 @@ function MainPage() {
                     <Typography variant="h4" component="h1" gutterBottom sx={{fontFamily: 'Scada, sans-serif', fontWeight: '600', mt:1}}>
                     Главная страница
                     </Typography>
-                    <Button onClick={toggleDrawer(true)} variant="outlined" size="small">Фильтры <FilterListOutlinedIcon/></Button>
+                    <Button onClick={toggleDrawer(true)} variant="outlined" size="small" style={{mx:6, }}>Фильтры <FilterListOutlinedIcon/></Button>
                         <Drawer open={openDrawer} onClose={toggleDrawer(false)}>
                             <Container sx={{display: 'flex', flexDirection: 'row', mt:1}}>
                                 {/* <Typography  gutterBottom sx={{fontFamily: 'Scada, sans-serif', fontWeight: '400', mt:2,}}>
@@ -196,7 +238,7 @@ function MainPage() {
                             <Typography  gutterBottom sx={{fontFamily: 'Scada, sans-serif', fontWeight: '500', mt:1, mx:3}}>
                                     Категории
                             </Typography>
-                            <RichTreeView items={categories} onItemClick={(event, itemId) => alert(itemId)}/>
+                            <RichTreeView items={categories} onItemClick={(event, itemId) => ((itemId>999) ? setSmallCats(itemId): (setSmallCats('')))}/>
                                 
                         </Drawer>
                     <TextField
@@ -270,13 +312,23 @@ function MainPage() {
                                 marginBottom: 2, 
                                 
                             }}>
-                                <Button variant="contained" color="primary" value= {item.Item_ID} onClick={(e) => removeFromCart(e.currentTarget.value)}>
+                                <Button variant="contained" color="primary" value= {item.Item_ID} onClick={() => removeFromCart(item)}>
                                     -
                                 </Button>
+                                 <Snackbar
+                                    open={openDel}
+                                    autoHideDuration={5000}
+                                    onClose={handleCloseDel}
+                                    message="Товар удалён из корзины"/>
+                                <Snackbar
+                                    open={openNF}
+                                    autoHideDuration={5000}
+                                    onClose={handleNotFound}
+                                    message="Товар не найден в корзине"/>
                                 <Typography gutterBottom sx={{ fontFamily: 'Scada, sans-serif', fontWeight: '400', mx: 2 , color: '#A8A8A8',}}>
                                    
                                 </Typography>
-                                <Button variant="contained" color="primary" value= {item.Item_ID} onClick={(e) => addToCart(e.currentTarget.value)}>
+                                <Button variant="contained" color="primary" value= {item.Item_ID} onClick={() => addToCart(item)}>
                                     +
                                 </Button>
                                 <Snackbar

@@ -10,19 +10,51 @@ function ItemPage() {
     const [chartItems, setChartItems] = useState([]);
     const [open, setOpen] = React.useState(false);
     const [quantity, setQuantity] = useState(1);
+    const [openDel, setOpenDel] = useState(false);
+    const [openNF, setOpenNF] = useState(false);
     
     const handleClick = () => {
         setOpen(true);
-      };
-    
-      const handleClose = (event, reason) => {
-        if (reason === 'clickaway') {
-          return;
-        }
-    
-        setOpen(false);
-      };
+        handleCloseDel()
+    };
 
+    const handleOpenDel = () => {
+        setOpenDel(true);
+        handleClose()
+    };
+
+    const handleOpenNF = () => {
+        setOpenNF(true);
+        handleNotFound()
+    };
+
+    const handleClose = (event, reason) => {
+        if (reason === 'clickaway') {
+            return;
+        }
+
+        setOpen(false);
+        setOpenNF(false)
+    };
+
+    const handleCloseDel = (event, reason) => {
+        if (reason === 'clickaway') {
+            return;
+        }
+
+        setOpenDel(false);
+        setOpenNF(false)
+    };
+
+    
+    const handleNotFound = (event, reason) => {
+        if (reason === 'clickaway') {
+            return;
+        }
+
+        setOpenDel(false);
+        setOpen(false);
+    };
 
     const addToCart = async () => {
         try {
@@ -80,35 +112,43 @@ function ItemPage() {
     };
 
 
-   const removeFromCart = async () => {
+    const removeFromCart = async () => {
         try {
             const userResponse = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/auth/users/me/`, {
                 headers: {
                     Authorization: `JWT ${Cookies.get('token')}`
                 }
             });
-            await axios.post(`${process.env.REACT_APP_API_BASE_URL}/remove_from_chart/`, {
+            
+            const response = await axios.post(`${process.env.REACT_APP_API_BASE_URL}/remove_from_chart/`, {
                 user: userResponse.data.id,
                 item: id,
-                // price: item.price,
-                // count: quantity
             }, {
                 headers: {
                     Authorization: `JWT ${Cookies.get('token')}`
                 }
             });
+            
+            if (response.data.status === "Item not found in the chart.") {
+                console.warn("Item not found in the chart. Skipping update.");
+                handleOpenNF()
+                return;
+            }
+            
             const updatedItem = { ...item, amount: item.amount + quantity };
             await axios.put(`${process.env.REACT_APP_API_BASE_URL}/items/${id}/`, updatedItem, {
                 headers: {
                     Authorization: `JWT ${Cookies.get('token')}`
                 }
             });
+            
             setItem(updatedItem);
-            handleClick()
+            handleOpenDel();
         } catch (error) {
             console.error('Ошибка удаления:', error);
         }
     };
+    
 
     useEffect(() => {
         const fetchItem = async () => {
@@ -165,6 +205,14 @@ function ItemPage() {
                         <Typography variant="body2" sx={{fontFamily: 'Scada, sans-serif', fontWeight: '400'}}>
                             Количество: {item.amount}
                         </Typography>
+                         <Box  sx={{
+                                                        p: 2,
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        justifyContent: 'left', 
+                                                        marginBottom: 2, 
+                                                        
+                                                    }}>
                         <Button variant="contained" color="primary"
                                 onClick={addToCart} sx={{mt: 2}}>
                             Добавить в корзину
@@ -178,11 +226,21 @@ function ItemPage() {
                            {console.log(chartItems.filter(i => i.item.toString()===item.Item_ID).count)}
                            {console.log(chartItems)}
                         </Typography>
-                        {}
                         <Button variant="contained" color="primary"
-                                onClick={removeFromCart} sx={{mt: 2}}>
+                                onClick={removeFromCart} sx={{mt: 2, mx: 2}}>
                             -
                         </Button>
+                         <Snackbar
+                                open={openDel}
+                                autoHideDuration={5000}
+                                onClose={handleCloseDel}
+                                message="Товар удалён из корзины"/>
+                         <Snackbar
+                            open={openNF}
+                            autoHideDuration={5000}
+                            onClose={handleNotFound}
+                            message="Товар не найден в корзине"/>
+                    </Box>
                     </CardContent>
                 </Card>
             </Box>
