@@ -1,14 +1,25 @@
-import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
-import {useParams} from 'react-router-dom';
-import { Button, Container, Typography, Box, Card, CardContent, CardMedia, Pagination, IconButton, Snackbar,TextField, Drawer } from '@mui/material';
+import React, {useEffect, useState} from 'react';
+import {Link, useParams} from 'react-router-dom';
+import {
+    Box,
+    Button,
+    Card,
+    CardContent,
+    CardMedia,
+    Container,
+    Drawer,
+    IconButton,
+    Pagination,
+    Snackbar,
+    TextField,
+    Typography
+} from '@mui/material';
 import axios from 'axios';
 import SearchIcon from '@mui/icons-material/Search';
-import {  ShoppingCart } from '@mui/icons-material';
+import {ShoppingCart} from '@mui/icons-material';
 import FilterListOutlinedIcon from '@mui/icons-material/FilterListOutlined';
 import Cookies from 'js-cookie';
-import { RichTreeView } from '@mui/x-tree-view/RichTreeView';
-import { TreeItem } from '@mui/x-tree-view/TreeItem';
+import {RichTreeView} from '@mui/x-tree-view/RichTreeView';
 
 
 function MainPage() {
@@ -27,12 +38,12 @@ function MainPage() {
     const [categories, setCategories] = useState([]);
     const [openDel, setOpenDel] = useState(false);
     const [openNF, setOpenNF] = useState(false);
-   
+
 
     const toggleDrawer = (newOpen) => () => {
         setOpenDrawer(newOpen);
     };
-    
+
     const handleClick = () => {
         setOpen(true);
         handleCloseDel()
@@ -66,7 +77,7 @@ function MainPage() {
         setOpenNF(false)
     };
 
-    
+
     const handleNotFound = (event, reason) => {
         if (reason === 'clickaway') {
             return;
@@ -80,7 +91,7 @@ function MainPage() {
     const handleSearch = (event) => {
         event.preventDefault();
         console.log('Searching for:', searchTerm);
-        
+
     };
 
     const addToCart = async (it) => {
@@ -101,7 +112,7 @@ function MainPage() {
                         Authorization: `JWT ${Cookies.get('token')}`
                     }
                 });
-            
+
                 // Обработка успешного ответа
                 console.log('Chart created successfully:', response.data);
             } catch (error) {
@@ -114,7 +125,7 @@ function MainPage() {
                     console.error('An error occurred:', error.message);
                 }
             }
-            
+
             await axios.post(`${process.env.REACT_APP_API_BASE_URL}/add_to_cart/`, {
                 user: userResponse.data.id,
                 item: it.Item_ID,
@@ -125,20 +136,20 @@ function MainPage() {
                     Authorization: `JWT ${Cookies.get('token')}`
                 }
             });
-            const updatedItem = { ...it, amount: it.amount - 1 };
+            const updatedItem = {...it, amount: it.amount - 1};
             await axios.put(`${process.env.REACT_APP_API_BASE_URL}/items/${it.Item_ID}/`, updatedItem, {
                 headers: {
                     Authorization: `JWT ${Cookies.get('token')}`
                 }
             });
-          handleClick()
+            handleClick()
         } catch (error) {
             console.error('Ошибка добавления в корзину:', error);
         }
     };
 
 
-   const removeFromCart = async (it) => {
+    const removeFromCart = async (it) => {
         try {
             const userResponse = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/auth/users/me/`, {
                 headers: {
@@ -162,13 +173,13 @@ function MainPage() {
                 return;
             }
 
-            const updatedItem = { ...it, amount: it.amount + 1 };
+            const updatedItem = {...it, amount: it.amount + 1};
             await axios.put(`${process.env.REACT_APP_API_BASE_URL}/items/${it.Item_ID}/`, updatedItem, {
                 headers: {
                     Authorization: `JWT ${Cookies.get('token')}`
                 }
             });
-           
+
             handleOpenDel()
         } catch (error) {
             console.error('Ошибка удаления:', error);
@@ -189,9 +200,9 @@ function MainPage() {
     }, [searchTerm, smallCats]);
 
     useEffect(() => {
-        const fetchCats= async () => {
+        const fetchCats = async () => {
             try {
-                
+
                 const categoryResp = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/get_categories/`);
                 setCategories(categoryResp.data.categories);
                 console.log(categories)
@@ -204,7 +215,6 @@ function MainPage() {
         fetchCats();
     }, []);
 
-    
 
     const indexOfLastItem = page * itemsPerPage;
     const indexOfFirstItem = indexOfLastItem - itemsPerPage;
@@ -214,53 +224,96 @@ function MainPage() {
     const handlePageChange = (event, value) => {
         setPage(value);
     };
-    
+
 
     return (
-        <Box sx={{ display: 'flex', flexDirection: 'column' }}>
-            <Container sx={{ flexGrow: 1, py: 3,  }}>
-                    <form onSubmit={handleSearch} style={{ display: 'flex', alignItems: 'center', marginRight: '16px' }}>
-                    <Typography variant="h4" component="h1" gutterBottom sx={{fontFamily: 'Scada, sans-serif', fontWeight: '600', mt:1}}>
+        <Box component="main" sx={{display: 'flex', flexDirection: 'column'}}>
+            <Container
+                sx={{flexGrow: 1, py: 3}}
+                role="region"
+                aria-labelledby="main-heading"
+            >
+                <Typography
+                    variant="h4"
+                    component="h1"
+                    id="main-heading"
+                    gutterBottom
+                    sx={{fontFamily: 'Scada, sans-serif', fontWeight: '600', mt: 1, textAlign: 'center'}}
+                >
                     Главная страница
-                    </Typography>
-                    <Button onClick={toggleDrawer(true)} variant="outlined" size="small" style={{mx:6, }}>Фильтры <FilterListOutlinedIcon/></Button>
-                        <Drawer open={openDrawer} onClose={toggleDrawer(false)}>
-                            <Container sx={{display: 'flex', flexDirection: 'row', mt:1}}>
-                                {/* <Typography  gutterBottom sx={{fontFamily: 'Scada, sans-serif', fontWeight: '400', mt:2,}}>
-                                    Цена от:
-                                </Typography>
-                            <TextField id="filled-basic" label="Filled" variant="filled" />
-                                <Typography  gutterBottom sx={{fontFamily: 'Scada, sans-serif', fontWeight: '400', mt:2}}>
-                                    до:
-                                </Typography>
-                            <TextField id="filled-basic" label="Filled" variant="filled" /> */}
-                            </Container>
-                            <Typography  gutterBottom sx={{fontFamily: 'Scada, sans-serif', fontWeight: '500', mt:1, mx:3}}>
-                                    Категории
+                </Typography>
+
+                <form
+                    onSubmit={handleSearch}
+                    role="search"
+                    aria-label="Поиск товаров"
+                    style={{display: 'flex', alignItems: 'center', justifyContent: 'center', marginRight: '16px'}}
+                >
+                    <Button
+                        onClick={toggleDrawer(true)}
+                        variant="outlined"
+                        size="small"
+                        aria-label="Открыть фильтры"
+                        aria-haspopup="dialog"
+                    >
+                        Фильтры
+                        <FilterListOutlinedIcon aria-hidden="true"/>
+                    </Button>
+
+                    <Drawer
+                        open={openDrawer}
+                        onClose={toggleDrawer(false)}
+                        role="dialog"
+                        aria-labelledby="filter-heading"
+                        aria-modal="true"
+                    >
+                        <Container sx={{display: 'flex', flexDirection: 'row', mt: 1}}>
+                            <Typography
+                                id="filter-heading"
+                                gutterBottom
+                                sx={{fontFamily: 'Scada, sans-serif', fontWeight: '500', mt: 1, mx: 3}}
+                            >
+                                Категории
                             </Typography>
-                            <RichTreeView items={categories} onItemClick={(event, itemId) => ((itemId>999) ? setSmallCats(itemId): (setSmallCats('')))}/>
-                                
-                        </Drawer>
+                        </Container>
+                        <RichTreeView
+                            items={categories}
+                            aria-label="Дерево категорий"
+                            onItemClick={(event, itemId) => ((itemId > 999) ? setSmallCats(itemId) : (setSmallCats('')))}
+                        />
+                    </Drawer>
+
                     <TextField
                         variant="outlined"
                         size="small"
                         label="Поиск..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        sx={{ backgroundColor: 'white', mx:3 }}
+                        sx={{backgroundColor: 'white', mx: 3}}
+                        id="search-input"
+                        aria-labelledby="search-label"
                     />
-                    <IconButton color="inherit" type="submit">
-                        <SearchIcon />
+                    <Typography id="search-label" hidden>Поле поиска товаров</Typography>
+
+                    <IconButton
+                        color="inherit"
+                        type="submit"
+                        aria-label="Выполнить поиск"
+                    >
+                        <SearchIcon aria-hidden="true"/>
                     </IconButton>
-                </form>               
+                </form>
+
                 <Box
                     sx={{
                         display: 'flex',
                         flexWrap: 'wrap',
                         gap: 3,
                         justifyContent: 'center',
-                        mt:3
+                        mt: 3
                     }}
+                    role="list"
+                    aria-label="Список товаров"
                 >
                     {currentItems.map((item) => (
                         <Card
@@ -270,65 +323,101 @@ function MainPage() {
                                 display: 'flex',
                                 flexDirection: 'column',
                                 justifyContent: 'space-between',
-                                
                             }}
+                            role="listitem"
+                            aria-labelledby={`item-${item.Item_ID}-title`}
                         >
                             <CardMedia
                                 component="img"
                                 height="200"
                                 image={item.img || 'https://via.placeholder.com/300'}
-                                alt={item.name}
+                                alt={`Изображение товара: ${item.name}`}
+                                aria-describedby={`item-${item.Item_ID}-desc`}
                             />
-                            <CardContent >
-                                <Typography variant="h6" gutterBottom sx={{fontFamily: 'Scada, sans-serif', fontWeight: '400'}}>
+                            <CardContent>
+                                <Typography
+                                    variant="h6"
+                                    gutterBottom
+                                    id={`item-${item.Item_ID}-title`}
+                                    sx={{fontFamily: 'Scada, sans-serif', fontWeight: '400'}}
+                                >
                                     {item.name}
                                 </Typography>
-                                <Typography variant="body2" color="text.secondary" gutterBottom sx={{fontFamily: 'Scada, sans-serif', fontWeight: '400'}}>
+                                <Typography
+                                    variant="body2"
+                                    color="text.secondary"
+                                    gutterBottom
+                                    id={`item-${item.Item_ID}-desc`}
+                                    sx={{fontFamily: 'Scada, sans-serif', fontWeight: '400'}}
+                                >
                                     {item.description}
                                 </Typography>
-                                <Typography variant="h6" color="primary" gutterBottom sx={{fontFamily: 'Scada, sans-serif', fontWeight: '400'}}>
+                                <Typography
+                                    variant="h6"
+                                    color="primary"
+                                    gutterBottom
+                                    aria-label={`Цена: ${item.price} долларов`}
+                                    sx={{fontFamily: 'Scada, sans-serif', fontWeight: '400'}}
+                                >
                                     ${item.price}
                                 </Typography>
                             </CardContent>
-                            <Box sx={{ p: 2 }}>
-                            
+                            <Box sx={{p: 2}}>
                                 <Button
                                     component={Link}
                                     to={`/items/${item.Item_ID}`}
                                     variant="contained"
                                     color="primary"
                                     fullWidth
-                                ><Typography gutterBottom sx={{fontFamily: 'Scada, sans-serif', fontWeight: '500'}}>
-                                    подробнее
+                                    aria-label={`Подробнее о товаре ${item.name}`}
+                                >
+                                    <Typography gutterBottom sx={{fontFamily: 'Scada, sans-serif', fontWeight: '500'}}>
+                                        подробнее
                                     </Typography>
-                                    
                                 </Button>
                             </Box>
-                            <Box  sx={{
-                                p: 2,
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center', 
-                                marginBottom: 2, 
-                                
-                            }}>
-                                <Button variant="contained" color="primary" value= {item.Item_ID} onClick={() => removeFromCart(item)}>
+                            <Box
+                                sx={{
+                                    p: 2,
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    marginBottom: 2,
+                                    gap: 2
+                                }}
+                                role="group"
+                                aria-label="Управление корзиной"
+                            >
+                                <Button
+                                    variant="contained"
+                                    color="primary"
+                                    value={item.Item_ID}
+                                    onClick={() => removeFromCart(item)}
+                                    aria-label={`Удалить ${item.name} из корзины`}
+                                >
                                     -
                                 </Button>
-                                 <Snackbar
+                                <Snackbar
                                     open={openDel}
                                     autoHideDuration={5000}
                                     onClose={handleCloseDel}
-                                    message="Товар удалён из корзины"/>
+                                    message="Товар удалён из корзины"
+                                    aria-live="polite"
+                                />
                                 <Snackbar
                                     open={openNF}
                                     autoHideDuration={5000}
                                     onClose={handleNotFound}
-                                    message="Товар не найден в корзине"/>
-                                <Typography gutterBottom sx={{ fontFamily: 'Scada, sans-serif', fontWeight: '400', mx: 2 , color: '#A8A8A8',}}>
-                                   
-                                </Typography>
-                                <Button variant="contained" color="primary" value= {item.Item_ID} onClick={() => addToCart(item)}>
+                                    message="Товар не найден в корзине"
+                                    aria-live="assertive"
+                                />
+                                <Button
+                                    variant="contained"
+                                    color="primary"
+                                    value={item.Item_ID}
+                                    onClick={() => addToCart(item)}
+                                    aria-label={`Добавить ${item.name} в корзину`}
+                                >
                                     +
                                 </Button>
                                 <Snackbar
@@ -337,23 +426,30 @@ function MainPage() {
                                     onClose={handleClose}
                                     message="Товар добавлен в корзину"
                                 />
-                                <IconButton color="inherit" sx={{ ml: 2, }}>
-                                    <ShoppingCart sx={{ color: '#A8A8A8' }} /> 
+                                <IconButton
+                                    color="inherit"
+                                    sx={{ml: 2}}
+                                    aria-label="Перейти в корзину"
+                                >
+                                    <ShoppingCart sx={{color: '#A8A8A8'}} aria-hidden="true"/>
                                 </IconButton>
-
                             </Box>
-
                         </Card>
                     ))}
                 </Box>
 
-                <Box sx={{ mt: 4, display: 'flex', justifyContent: 'center' }}>
+                <Box
+                    sx={{mt: 4, display: 'flex', justifyContent: 'center'}}
+                    role="navigation"
+                    aria-label="Навигация по страницам"
+                >
                     <Pagination
-                        count={Math.ceil(items.length / itemsPerPage)} // Calculate the number of pages
+                        count={Math.ceil(items.length / itemsPerPage)}
                         page={page}
                         onChange={handlePageChange}
                         variant="outlined"
                         color="primary"
+                        aria-label="Выбор страницы"
                     />
                 </Box>
             </Container>
