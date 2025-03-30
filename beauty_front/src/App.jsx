@@ -29,7 +29,7 @@ function App() {
                     <Route path="/login" element={<LogIn />} />
                     <Route path="/register" element={<SignUp />} />
                     <Route path="/" element={<MainPage />} />
-                    <Route path="/item/:id" element={<ItemPage />} />
+                    <Route path="/items/:id" element={<ItemPage />} />
                     <Route path="/profile" element={<ProfilePage />} />
                     <Route path="/cart" element={<CartPage />} />
                 </Routes>

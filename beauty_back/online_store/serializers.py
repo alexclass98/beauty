@@ -46,19 +46,37 @@ class ChartSerializer(serializers.ModelSerializer):
     class Meta:
         model = Chart
         fields = '__all__'
-        extra_kwargs = {
-            'Chart_ID': {'read_only': True}
-        }
+
+
+class ItemsFilter(filters.FilterSet):
+    pass
+    max_pr = filters.NumberFilter(field_name='price', lookup_expr='lte')
+    min_pr = filters.NumberFilter(field_name='price', lookup_expr='gte')
+    search = filters.CharFilter(field_name='name', lookup_expr='icontains')
+
+    class Meta:
+        model = Items
+        fields = ['price', 'name', 'category', 'description']
+
+
+class ChartItemSerializer(serializers.ModelSerializer):
+    item = serializers.PrimaryKeyRelatedField(queryset=Items.objects.all())
+    class Meta:
+        model = ChartItem
+        fields = '__all__'
+
 
 
 class OrderSerializer(serializers.ModelSerializer):
     class Meta:
-        # Модель, которую мы сериализуем
         model = Order
-        # Поля, которые мы сериализуем
         fields = '__all__'
-        extra_kwargs = {
-            'Order_ID': {'read_only': True}
-        }
+
+class OrderItemsSerializer(serializers.ModelSerializer):
+    item = serializers.PrimaryKeyRelatedField(queryset=Items.objects.all())
+
+    class Meta:
+        model = OrderItems
+        fields = '__all__'
 
 

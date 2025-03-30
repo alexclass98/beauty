@@ -6,13 +6,29 @@ import reportWebVitals from './reportWebVitals';
 //import { BrowserRouter } from 'react-router-dom';
 import { Provider } from 'react-redux';
 import configureStore from './components/store';
+import { createTheme, ThemeProvider } from '@mui/material/styles';
 const root = ReactDOM.createRoot(document.getElementById('root'));
+
+
+const theme = createTheme({
+  palette: {
+      primary: {
+          main: '#E07BFF', // Измените здесь на ваш основной цвет
+      },
+      secondary: {
+          main: '#dc004e', // Измените здесь на ваш вторичный цвет
+      },
+  },
+});
+
 
 root.render(
   <React.StrictMode>
-   <Provider store={configureStore()}>
-    <App />
-    </Provider>
+     <ThemeProvider theme={theme}>
+        <Provider store={configureStore()}>
+          <App />
+          </Provider>
+    </ThemeProvider>
   </React.StrictMode>
 );
 

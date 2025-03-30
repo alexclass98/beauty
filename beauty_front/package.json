@@ -1,12 +1,15 @@
 {
-  "name": "med_shop",
+  "name": "beauty_shop",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",
+    "@mui/base": "^5.0.0-beta.69",
     "@mui/icons-material": "^6.4.5",
+    "@mui/lab": "^6.0.0-beta.28",
     "@mui/material": "^6.4.5",
+    "@mui/x-tree-view": "^7.26.0",
     "@testing-library/jest-dom": "^5.16.5",
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^13.5.0",
