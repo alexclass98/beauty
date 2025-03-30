@@ -11,7 +11,7 @@ function CartPage() {
     const [open, setOpen] = useState(false);
     const [openDel, setOpenDel] = useState(false);
     const [update, setUpdate] = useState(false);
-    const [topItems, setTopItems] = useState([]);
+    const [recommendedItems, setRecommendedItems] = useState([]); // Added state for recommended items
 
     const handleClick = () => {
         setOpen(true);
@@ -33,30 +33,24 @@ function CartPage() {
         setOpenDel(false);
     };
 
-    const fetchPopularItems = async () => {
-        try {
-            const response = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/order_items/`);
-            const orderItems = response.data;
 
-            const itemCounts = orderItems.reduce((acc, item) => {
-                acc[item.item] = (acc[item.item] || 0) + 1;
-                return acc;
-            }, {});
-
-            const popularItemIds = Object.entries(itemCounts)
-                .sort((a, b) => b[1] - a[1])
-                .slice(0, 3)
-                .map(([id]) => parseInt(id));
-
-            const popularItems = popularItemIds
-                .map(id => items.find(item => item.Item_ID === id))
-                .filter(Boolean);
-
-            setTopItems(popularItems);
-        } catch (error) {
-            console.error('Ошибка загрузки популярных товаров:', error);
+    const fetchRecommendedItems = () => {
+        if (!cartItems || cartItems.length === 0) {
+            // If the cart is empty, don't show any recommendations.  Alternatively, fetch popular items.
+            setRecommendedItems([]);
+            return;
         }
+
+        // 1. Collect item IDs from the cart
+        const cartItemNames = cartItems.map(item => item.item_name);
+
+
+        // 2. Filter items based on some logic.  Here, we recommend items *not* in the cart
+        const recommended = items.filter(item => !cartItemNames.includes(item.name));
+        // 3. Set the recommended items state, limiting to 3 items
+        setRecommendedItems(recommended.slice(0, 3));
     };
+
 
     useEffect(() => {
         const fetchData = async () => {
@@ -78,13 +72,19 @@ function CartPage() {
                 });
                 setItems(itemsResponse.data);
 
-                await fetchPopularItems();
+
             } catch (error) {
                 console.error('Ошибка загрузки данных:', error);
             }
         };
         fetchData();
     }, [update]);
+
+    useEffect(() => {
+        if (items.length > 0 && cartItems.length >=0 ) {
+            fetchRecommendedItems();
+        }
+    }, [items, cartItems]); // Re-run when items or cartItems change
 
     const getItemInfo = (itemName) => items.find(item => item.name === itemName);
 
@@ -279,16 +279,16 @@ function CartPage() {
                 })}
             </Box>
 
-            {topItems.length > 0 && (
+            {recommendedItems.length > 0 && ( //Use recommendedItems here.
                 <Box sx={{mt: 4}} role="region" aria-labelledby="recommendations-heading">
                     <Typography variant="h5" id="recommendations-heading"
                                 sx={{fontFamily: 'Scada, sans-serif', fontWeight: '500', mb: 2}}>
-                        Часто покупают вместе:
+                        Рекомендуем:
                     </Typography>
 
                     <Box sx={{display: 'flex', gap: 3, flexWrap: 'wrap', justifyContent: 'center'}} role="list"
                          aria-label="Рекомендуемые товары">
-                        {topItems.map((item) => (
+                        {recommendedItems.map((item) => (
                             <Card key={item.Item_ID} sx={{width: 300}} role="listitem"
                                   aria-labelledby={`recommended-${item.Item_ID}-title`}>
                                 <CardMedia
